@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024_07"
 
 [dependencies]
+pragma_lib = { git = "https://github.com/astraly-labs/pragma-lib" }
 starknet = ">=2.11.4"
 
 [dev-dependencies]
