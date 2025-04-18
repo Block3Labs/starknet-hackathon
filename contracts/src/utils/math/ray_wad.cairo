@@ -9,9 +9,10 @@ pub const WAD: u256 = 1_000_000_000_000_000_000; // 1_u256.pow(18);
 /// Half of WAD, used for rounding
 pub const HALF_WAD: u256 = WAD / 2;
 /// 1 * 10^27 (27 decimal places) — used for interest rates, indexes, etc.
-pub const RAY: u256 = 1_000_000_000_000_000_000_000_000_000;// 1_u256.pow(27);
+pub const RAY: u256 = 1_000_000_000_000_000_000_000_000_000; // 1_u256.pow(27);
 /// Half of RAY, used for rounding
 pub const HALF_RAY: u256 = RAY / 2;
+pub const WAD_RAY_RATIO: u256 = 1_000_000_000;
 
 pub fn ray_mul(a: u256, b: u256) -> u256 {
     if b == 0_u256 {
@@ -98,22 +99,16 @@ pub fn wad_div(a: u256, b: u256) -> u256 {
 }
 
 pub fn wad_to_ray(wad: u256) -> u256 {
-    let scale = RAY / WAD;
-
-    // Overflow protection
-    let max_u256: u256 = Bounded::MAX;
-    let max_safe_wad = max_u256 / scale;
-    assert(wad <= max_safe_wad, 'overflow: wad_to_ray');
-
-    wad * scale
+    let ray = wad * WAD_RAY_RATIO;
+    assert(ray / WAD_RAY_RATIO == wad, 'overflow: wad_to_ray');
+    ray
 }
 
 pub fn ray_to_wad(ray: u256) -> u256 {
-    let ratio = RAY / WAD;
-    let half_ratio = ratio / 2_u256;
-
-    let wide_rounded = ray.wide_mul(half_ratio);
-    let non_zero_ratio = ratio.try_into().unwrap();
-    let (quotient, _) = u512_safe_div_rem_by_u256(wide_rounded, non_zero_ratio);
-    quotient.try_into().unwrap()
+    let remainder = ray % WAD_RAY_RATIO;
+    let mut wad = ray / WAD_RAY_RATIO;
+    if remainder >= WAD_RAY_RATIO / 2_u256 {
+        wad += 1_u256;
+    }
+    wad
 }

@@ -8,7 +8,7 @@ pub mod ScaledBalanceTokenComponent {
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
     use starknet_hackathon::interfaces::scaled_balance_token::IScaledBalanceToken;
-    use starknet_hackathon::utils::math::ray_wad::{RAY, ray_div};
+    use starknet_hackathon::utils::math::ray_wad::{RAY, ray_div, ray_mul};
 
     #[storage]
     pub struct Storage {
@@ -66,15 +66,18 @@ pub mod ScaledBalanceTokenComponent {
         fn balance_of(
             self: @ComponentState<TContractState>, user: ContractAddress, liquidity_index: u256,
         ) -> u256 {
-            (self.user_scaled_balances.entry(user).read() * liquidity_index) / RAY
+            let scaled_balance = self.user_scaled_balances.entry(user).read();
+            ray_mul(scaled_balance, liquidity_index)
         }
 
         // Calculate real YT-Token total supply value
         // Voir le yield actuel qui est généré - TVL du marché de YT
+        // TVL a maturité
         fn scaled_total_supply(
             self: @ComponentState<TContractState>, liquidity_index: u256,
         ) -> u256 {
-            (self.total_scaled_supply.read() * liquidity_index) / RAY
+            let total_scaled_supply = self.total_scaled_supply.read();
+            ray_mul(total_scaled_supply, liquidity_index)
         }
     }
 
