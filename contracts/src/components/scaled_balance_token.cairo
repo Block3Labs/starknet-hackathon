@@ -1,7 +1,8 @@
 #[starknet::component]
 pub mod ScaledBalanceTokenComponent {
-    use openzeppelin_token::erc20::ERC20Component;
     use openzeppelin_token::erc20::ERC20Component::InternalTrait as ERC20InternalTrait;
+    use openzeppelin_token::erc20::interface::IERC20;
+    use openzeppelin_token::erc20::{ERC20Component, ERC20HooksEmptyImpl};
     use starknet::ContractAddress;
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
@@ -163,7 +164,7 @@ pub mod ScaledBalanceTokenComponent {
             self.user_scaled_balances.entry(to).write(to_balance + amount_scaled);
 
             let mut erc20_component = get_dep_component_mut!(ref self, ERC20);
-            erc20_component.transfer(from, to, amount);
+            erc20_component.transfer(to, amount);
 
             true
         }

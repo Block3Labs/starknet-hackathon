@@ -105,7 +105,6 @@ pub mod YieldToken {
             assert(caller == self.market.read().contract_address, Errors::NOT_MARKET);
         }
     }
-    
     // #[abi(embed_v0)]
 // impl ERC20 of openzeppelin_token::erc20::interface::IERC20<ContractState> {
 // }
