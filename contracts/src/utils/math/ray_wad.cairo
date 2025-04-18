@@ -1,16 +1,15 @@
 use core::integer::{u512, u512_safe_div_rem_by_u256};
 /// As Cairo does not support float this module
 /// provides high-precision constants for financial math operations.
-use core::num::traits::Pow;
 use core::num::traits::{Bounded, OverflowingSub, WideMul};
 use starknet_hackathon::utils::math::u512_ops::u512_add_u256;
 
 /// 1 * 10^18 (18 decimal places) — used for token amounts
-pub const WAD: u256 = 1_u256.pow(18);
+pub const WAD: u256 = 1_000_000_000_000_000_000; // 1_u256.pow(18);
 /// Half of WAD, used for rounding
 pub const HALF_WAD: u256 = WAD / 2;
 /// 1 * 10^27 (27 decimal places) — used for interest rates, indexes, etc.
-pub const RAY: u256 = 1_u256.pow(27);
+pub const RAY: u256 = 1_000_000_000_000_000_000_000_000_000;// 1_u256.pow(27);
 /// Half of RAY, used for rounding
 pub const HALF_RAY: u256 = RAY / 2;
 

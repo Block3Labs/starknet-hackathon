@@ -22,3 +22,8 @@ pub mod utils {
         pub mod u512_ops;
     }
 }
+
+#[cfg(test)]
+pub mod tests {
+    pub mod test_scaled_balance_token;
+}

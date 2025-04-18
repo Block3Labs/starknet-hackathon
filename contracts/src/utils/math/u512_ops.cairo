@@ -1,5 +1,6 @@
 use core::integer::u512;
 use core::num::traits::{OverflowingAdd, OverflowingSub};
+use core::option::Option;
 
 #[derive(Copy, Drop, Hash, PartialEq, Serde)]
 struct u256X2 {
@@ -16,11 +17,11 @@ pub impl U512Intou256X2 of Into<u512, u256X2> {
 }
 
 pub impl U512TryIntoU256 of TryInto<u512, u256> {
-    const fn try_into(self: u512) -> Option<u256> {
+    fn try_into(self: u512) -> Option<u256> {
         if self.limb2 != 0 || self.limb3 != 0 {
-            None
+            Option::None
         } else {
-            Some(u256 { low: self.limb0, high: self.limb1 })
+            Option::Some(u256 { low: self.limb0, high: self.limb1 })
         }
     }
 }

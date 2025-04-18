@@ -52,7 +52,7 @@ pub mod ScaledBalanceTokenComponent {
     }
 
     #[embeddable_as(ScaledBalanceTokenImpl)]
-    impl ScaledBalanceToken<
+    pub impl ScaledBalanceToken<
         TContractState,
         +HasComponent<TContractState>,
         impl ERC20: ERC20Component::HasComponent<TContractState>,

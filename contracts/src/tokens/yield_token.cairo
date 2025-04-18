@@ -2,9 +2,7 @@
 pub mod YieldToken {
     use core::num::traits::Zero;
     use openzeppelin_token::erc20::{ERC20Component, ERC20HooksEmptyImpl};
-    use starknet::storage::{
-        Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
-    };
+    use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
     use starknet::{ContractAddress, get_caller_address};
     use starknet_hackathon::components::scaled_balance_token::ScaledBalanceTokenComponent;
     use starknet_hackathon::components::scaled_balance_token::ScaledBalanceTokenComponent::InternalTrait as ScaledBalanceTokenInternalTrait;
