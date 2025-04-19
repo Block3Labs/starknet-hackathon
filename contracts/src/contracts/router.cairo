@@ -1,12 +1,28 @@
 #[starknet::contract]
 pub mod Router {
+    use openzeppelin_access::ownable::OwnableComponent;
     use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
-    use starknet::{ContractAddress, get_caller_address};
+    use openzeppelin_upgrades::UpgradeableComponent;
+    use openzeppelin_upgrades::interface::IUpgradeable;
+    use starknet::{ClassHash, ContractAddress, get_caller_address};
     use starknet_hackathon::interfaces::market::{IMarketDispatcher, IMarketDispatcherTrait};
     use starknet_hackathon::interfaces::router::IRouter;
 
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+    component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
+
+    #[abi(embed_v0)]
+    impl OwnableMixinImpl = OwnableComponent::OwnableMixinImpl<ContractState>;
+    impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
+    impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>;
+
     #[storage]
-    struct Storage {}
+    struct Storage {
+        #[substorage(v0)]
+        ownable: OwnableComponent::Storage,
+        #[substorage(v0)]
+        upgradeable: UpgradeableComponent::Storage,
+    }
 
     #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
     pub struct Deposit {
@@ -15,33 +31,41 @@ pub mod Router {
         amount: u256,
         pt_received: u256,
         yt_locked: u256,
-        liquidity_index: u256,
     }
 
     #[event]
-    #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
+    #[derive(Drop, Debug, PartialEq, starknet::Event)]
     pub enum Event {
         Deposit: Deposit,
+        #[flat]
+        OwnableEvent: OwnableComponent::Event,
+        #[flat]
+        UpgradeableEvent: UpgradeableComponent::Event,
     }
 
     mod Errors {
         pub const INVALID_BALANCE: felt252 = 'Invalid market balance';
     }
 
+    #[constructor]
+    fn constructor(ref self: ContractState, owner: ContractAddress) {
+        self.ownable.initializer(owner);
+    }
+
     #[abi(embed_v0)]
     impl Router of IRouter<ContractState> {
-        // Dont' forget to approve underlying_token.approve(router, amount)
         fn swap_underlying_for_pt(
             ref self: ContractState, market_address: ContractAddress, amount: u256,
         ) {
             let caller = get_caller_address();
 
-            let underlying_token = IERC20Dispatcher { contract_address: market_address };
+            let market = IMarketDispatcher { contract_address: market_address };
+            let underlying_token = IERC20Dispatcher {
+                contract_address: market.underlying_asset_address(),
+            };
             underlying_token.transfer_from(caller, market_address, amount);
             assert(underlying_token.balance_of(market_address) == amount, Errors::INVALID_BALANCE);
 
-            let market = IMarketDispatcher { contract_address: market_address };
-            let liquidity_index = market.get_liquidity_index();
             market.deposit(caller, amount);
 
             // create_order()
@@ -53,15 +77,22 @@ pub mod Router {
                         amount,
                         pt_received: amount,
                         yt_locked: amount,
-                        liquidity_index,
                     },
                 );
         }
 
         fn swap_yt_for_underlying(
             ref self: ContractState, market_address: ContractAddress, amount: u256,
-        ) {// je sais pas encore le nom de ma fonction
+        ) { // je sais pas encore le nom de ma fonction
         // fulfill_order
+        }
+    }
+
+    #[abi(embed_v0)]
+    impl UpgradeableImpl of IUpgradeable<ContractState> {
+        fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
+            self.ownable.assert_only_owner();
+            self.upgradeable.upgrade(new_class_hash);
         }
     }
 }
