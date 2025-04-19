@@ -6,6 +6,7 @@ edition = "2024_07"
 [dependencies]
 starknet = "2.10.1"
 openzeppelin_token = "1.0.0"
+pragma_lib = { git = "https://github.com/astraly-labs/pragma-lib" }
 
 [dev-dependencies]
 snforge_std = "0.31.0"
