@@ -70,15 +70,7 @@ pub mod Router {
 
             // create_order()
 
-            self
-                .emit(
-                    Deposit {
-                        user: caller,
-                        amount,
-                        pt_received: amount,
-                        yt_locked: amount,
-                    },
-                );
+            self.emit(Deposit { user: caller, amount, pt_received: amount, yt_locked: amount });
         }
 
         fn swap_yt_for_underlying(
