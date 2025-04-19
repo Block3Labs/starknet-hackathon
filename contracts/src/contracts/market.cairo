@@ -1,28 +1,28 @@
-/// liquidityRate - APR in RAY per seconde
-/// liquidityIndex - This is a global index that reflects the accumulation of interest over time.
-/// Starts at 1e27 (RAY), then increases over time using the formula :
-/// liquidityIndex = liquidityIndex * (1 + rate * dt) → or in RAY : index = index * (RAY + rate *
-/// dt) / RAY scaledBalance - This is a user's ‘frozen’ balance. It never changes.
-///
-///
-/// Gérer la logique économique du protocole :
-/// liquidityRate (taux par seconde)
-/// liquidityIndex (croissance des intérêts)
-/// lastUpdateTimestamp
-/// Appeler régulièrement (ou à chaque action) la fonction
-///
-/// Répond aux appels deposit, withdraw
-/// Calcule la part "scaled" de l’utilisateur (en divisant par le liquidityIndex)
-// Interagit avec le YieldToken pour mint/burn les parts
 #[starknet::contract]
 pub mod Market {
     use core::num::traits::Zero;
+    use openzeppelin_access::ownable::OwnableComponent;
+    use openzeppelin_upgrades::UpgradeableComponent;
+    use openzeppelin_upgrades::interface::IUpgradeable;
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
-    use starknet::{ContractAddress, get_block_timestamp, get_caller_address, get_contract_address};
+    use starknet::{
+        ClassHash, ContractAddress, get_block_timestamp, get_caller_address, get_contract_address,
+    };
     use starknet_hackathon::interfaces::market::IMarket;
+    use starknet_hackathon::interfaces::yield_token::{
+        IYieldTokenDispatcher, IYieldTokenDispatcherTrait,
+    };
     use starknet_hackathon::utils::math::ray_wad::{RAY, ray_div, ray_mul};
+
+    component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
+    component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
+
+    #[abi(embed_v0)]
+    impl OwnableMixinImpl = OwnableComponent::OwnableMixinImpl<ContractState>;
+    impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
+    impl UpgradeableInternalImpl = UpgradeableComponent::InternalImpl<ContractState>;
 
     const MIN_MATURITY: u64 = 604_800;
     const SECONDS_PER_YEAR: u64 = 31_536_000;
@@ -38,6 +38,11 @@ pub mod Market {
         start_timestamp: u64,
         last_updated_timestamp: u64,
         liquidity_index: u256,
+        last_applied_apr: u256,
+        #[substorage(v0)]
+        ownable: OwnableComponent::Storage,
+        #[substorage(v0)]
+        upgradeable: UpgradeableComponent::Storage,
     }
 
     #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
@@ -62,10 +67,14 @@ pub mod Market {
     }
 
     #[event]
-    #[derive(Copy, Drop, Debug, PartialEq, starknet::Event)]
+    #[derive(Drop, Debug, PartialEq, starknet::Event)]
     pub enum Event {
         MarketCreated: MarketCreated,
         LiquidityIndexUpdated: LiquidityIndexUpdated,
+        #[flat]
+        OwnableEvent: OwnableComponent::Event,
+        #[flat]
+        UpgradeableEvent: UpgradeableComponent::Event,
     }
 
     mod Errors {
@@ -77,6 +86,7 @@ pub mod Market {
     #[constructor]
     fn constructor(
         ref self: ContractState,
+        owner: ContractAddress,
         market_name: ByteArray,
         underlying_asset: ContractAddress,
         pt_token: ContractAddress,
@@ -90,6 +100,7 @@ pub mod Market {
         assert(yt_token.is_non_zero(), Errors::ZERO_ADDRESS);
         assert(maturity_timestamp >= MIN_MATURITY, Errors::MATURITY_TOO_SOON);
 
+        self.ownable.initializer(owner);
         self.market_name.write(market_name);
         self.underlying_asset.write(underlying_asset);
         self.pt_token.write(pt_token);
@@ -142,7 +153,8 @@ pub mod Market {
         }
 
         // fn get_apr(self: @ContractState) -> u256;
-        fn update_liquidity_index(ref self: ContractState, apr_bps: u256) {
+        fn update_liquidity_index(ref self: ContractState, apr: u256) {
+            self.ownable.assert_only_owner();
             let now = get_block_timestamp();
             let last_update = self.last_updated_timestamp.read();
             let delta = now - last_update;
@@ -151,7 +163,7 @@ pub mod Market {
                 return;
             }
 
-            let liquidity_rate = ray_div(apr_bps, BPS_DENOMINATOR);
+            let liquidity_rate = ray_div(apr, BPS_DENOMINATOR);
             let delta_ray = ray_div(delta.into(), SECONDS_PER_YEAR.into());
             let interest = ray_mul(liquidity_rate, delta_ray);
             let current_index = self.liquidity_index.read();
@@ -159,6 +171,7 @@ pub mod Market {
 
             self.liquidity_index.write(new_index);
             self.last_updated_timestamp.write(now);
+            self.last_applied_apr.write(apr);
 
             self
                 .emit(
@@ -172,13 +185,14 @@ pub mod Market {
                 );
         }
 
-        fn deposit(
-            ref self: ContractState, user: ContractAddress, amount: u256,
-        ) { // read liquidity_index
-        // has enough underlying asset amount
-        // mint_yt() for caller
-        // mint_pt() for contract
-        // emit event
+        fn deposit(ref self: ContractState, account: ContractAddress, amount: u256) {
+            // let apr = get_apr(underlying_address);
+            let apr = 350; // 3.5%
+            if self.last_applied_apr.read() != apr {
+                self.update_liquidity_index(apr);
+            }
+            self.mint_pt(account, amount);
+            self.mint_yt(account, amount);
         }
 
         // Redeem YT
@@ -188,15 +202,28 @@ pub mod Market {
         fn claim_underlying(ref self: ContractState) {}
     }
 
+    #[abi(embed_v0)]
+    impl UpgradeableImpl of IUpgradeable<ContractState> {
+        fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
+            self.ownable.assert_only_owner();
+            self.upgradeable.upgrade(new_class_hash);
+        }
+    }
+
     #[generate_trait]
     impl Internal of InternalTrait {
         fn assert_only_market(self: @ContractState) {
             assert(get_caller_address() == get_contract_address(), Errors::NOT_MARKET);
         }
 
-        fn mint_pt(ref self: ContractState, amount: u256) {}
+        fn mint_pt(ref self: ContractState, account: ContractAddress, amount: u256) {}
 
-        fn mint_yt(ref self: ContractState, amount: u256) {}
+        fn mint_yt(ref self: ContractState, account: ContractAddress, amount: u256) {
+            let contract_address = get_contract_address();
+            let liqudity_index = self.liquidity_index.read();
+            IYieldTokenDispatcher { contract_address: self.underlying_asset.read() }
+                .mint(account, contract_address, amount, liqudity_index);
+        }
 
         fn redeem_yt(ref self: ContractState, amount: u256) {}
 
