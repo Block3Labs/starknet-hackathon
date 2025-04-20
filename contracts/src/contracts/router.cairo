@@ -45,6 +45,7 @@ pub mod Router {
 
     mod Errors {
         pub const INVALID_BALANCE: felt252 = 'Invalid market balance';
+        pub const INVALID_SWAP_AMOUNT: felt252 = 'Amount must be greater than 0';
     }
 
     #[constructor]
@@ -57,9 +58,9 @@ pub mod Router {
         fn swap_underlying_for_pt(
             ref self: ContractState, market_address: ContractAddress, amount: u256,
         ) {
-            // check amount != 0
-            let caller = get_caller_address();
+            assert(amount != 0, Errors::INVALID_SWAP_AMOUNT);
 
+            let caller = get_caller_address();
             let market = IMarketDispatcher { contract_address: market_address };
             let underlying_token = IERC20Dispatcher {
                 contract_address: market.underlying_asset_address(),

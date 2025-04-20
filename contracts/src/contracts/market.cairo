@@ -186,7 +186,7 @@ pub mod Market {
 
         fn deposit(ref self: ContractState, caller: ContractAddress, amount: u256) {
             // let apr = get_apr(underlying_address);
-            let apr = 370; // 3.5% => 350, 4% => 400, 3.7% => 370
+            let apr = 350; // 3.5% => 350, 4% => 400, 3.7% => 370
             self.update_liquidity_index(apr);
             self.mint_pt(caller, amount);
             self.mint_yt(caller, amount);
