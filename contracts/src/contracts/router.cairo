@@ -79,10 +79,16 @@ pub mod Router {
             self.emit(Deposit { user: caller, amount, pt_received: amount, yt_locked: amount });
         }
 
+        // si quelqu'un buy les yt
+        fn swap_underlying_for_yt(
+            ref self: ContractState, market_address: ContractAddress, amount: u256,
+        ) {// fulfill_order
+        }
+
+        // A la fin de la maturité
         fn swap_yt_for_underlying(
             ref self: ContractState, market_address: ContractAddress, amount: u256,
-        ) { // je sais pas encore le nom de ma fonction
-        // fulfill_order
+        ) {
         }
     }
 

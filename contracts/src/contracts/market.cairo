@@ -81,6 +81,7 @@ pub mod Market {
         pub const NOT_MARKET: felt252 = 'Caller is not the market';
         pub const ZERO_ADDRESS: felt252 = 'Zero address not allowed';
         pub const MATURITY_TOO_SOON: felt252 = 'Maturity must exceed 1 week';
+        pub const NOT_MATURED: felt252 = 'Market not matured yet';
     }
 
     #[constructor]
@@ -193,7 +194,9 @@ pub mod Market {
         }
 
         // Redeem YT
-        fn claim_yield(ref self: ContractState) {}
+        fn claim_yield(ref self: ContractState) {
+            assert(self.is_mature(), Errors::NOT_MATURED);
+        }
 
         // Redeem PT
         fn claim_underlying(ref self: ContractState) {}
