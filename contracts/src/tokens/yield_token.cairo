@@ -47,14 +47,7 @@ pub mod YieldToken {
     }
 
     #[constructor]
-    fn constructor(
-        ref self: ContractState,
-        market: IMarketDispatcher,
-        name: ByteArray,
-        symbol: ByteArray,
-        decimals: u256,
-    ) {
-        self.market.write(market);
+    fn constructor(ref self: ContractState, name: ByteArray, symbol: ByteArray, decimals: u256) {
         self.erc20.initializer(name, symbol);
     }
 
@@ -63,6 +56,10 @@ pub mod YieldToken {
         fn underlying_asset_address(self: @ContractState) -> ContractAddress {
             IMarketDispatcher { contract_address: self.market.read().contract_address }
                 .underlying_asset_address()
+        }
+
+        fn set_market_address(ref self: ContractState, market_address: ContractAddress) {
+            self.market.write(IMarketDispatcher { contract_address: market_address });
         }
 
         fn mint(

@@ -57,14 +57,19 @@ pub mod Router {
         fn swap_underlying_for_pt(
             ref self: ContractState, market_address: ContractAddress, amount: u256,
         ) {
+            // check amount != 0
             let caller = get_caller_address();
 
             let market = IMarketDispatcher { contract_address: market_address };
             let underlying_token = IERC20Dispatcher {
                 contract_address: market.underlying_asset_address(),
             };
+            let previous_balance = underlying_token.balance_of(market_address);
             underlying_token.transfer_from(caller, market_address, amount);
-            assert(underlying_token.balance_of(market_address) == amount, Errors::INVALID_BALANCE);
+            assert(
+                previous_balance + amount == underlying_token.balance_of(market_address),
+                Errors::INVALID_BALANCE,
+            );
 
             market.deposit(caller, amount);
 

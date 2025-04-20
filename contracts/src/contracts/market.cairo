@@ -154,7 +154,6 @@ pub mod Market {
 
         // fn get_apr(self: @ContractState) -> u256;
         fn update_liquidity_index(ref self: ContractState, apr: u256) {
-            self.ownable.assert_only_owner();
             let now = get_block_timestamp();
             let last_update = self.last_updated_timestamp.read();
             let delta = now - last_update;
@@ -185,14 +184,12 @@ pub mod Market {
                 );
         }
 
-        fn deposit(ref self: ContractState, account: ContractAddress, amount: u256) {
+        fn deposit(ref self: ContractState, caller: ContractAddress, amount: u256) {
             // let apr = get_apr(underlying_address);
-            let apr = 350; // 3.5%
-            if self.last_applied_apr.read() != apr {
-                self.update_liquidity_index(apr);
-            }
-            self.mint_pt(account, amount);
-            self.mint_yt(account, amount);
+            let apr = 370; // 3.5% => 350, 4% => 400, 3.7% => 370
+            self.update_liquidity_index(apr);
+            self.mint_pt(caller, amount);
+            self.mint_yt(caller, amount);
         }
 
         // Redeem YT
@@ -216,13 +213,17 @@ pub mod Market {
             assert(get_caller_address() == get_contract_address(), Errors::NOT_MARKET);
         }
 
-        fn mint_pt(ref self: ContractState, account: ContractAddress, amount: u256) {}
+        fn mint_pt(
+            ref self: ContractState, recipient: ContractAddress, amount: u256,
+        ) { // mint pour recipient
+        // IPrincipalTokenDispatcher { contract_address: self.pt_token.read() }.mint();
+        }
 
-        fn mint_yt(ref self: ContractState, account: ContractAddress, amount: u256) {
+        fn mint_yt(ref self: ContractState, recipient: ContractAddress, amount: u256) {
             let contract_address = get_contract_address();
             let liqudity_index = self.liquidity_index.read();
-            IYieldTokenDispatcher { contract_address: self.underlying_asset.read() }
-                .mint(account, contract_address, amount, liqudity_index);
+            IYieldTokenDispatcher { contract_address: self.yt_token.read() }
+                .mint(contract_address, recipient, amount, liqudity_index);
         }
 
         fn redeem_yt(ref self: ContractState, amount: u256) {}

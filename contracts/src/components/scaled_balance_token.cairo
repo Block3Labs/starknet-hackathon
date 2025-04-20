@@ -90,7 +90,7 @@ pub mod ScaledBalanceTokenComponent {
     > of InternalTrait<TContractState> {
         fn mint_scaled(
             ref self: ComponentState<TContractState>,
-            account: ContractAddress,
+            caller: ContractAddress,
             on_behalf_of: ContractAddress,
             amount: u256,
             liquidity_index: u256,
@@ -98,20 +98,18 @@ pub mod ScaledBalanceTokenComponent {
             let amount_scaled = ray_div(amount, liquidity_index);
             assert(amount_scaled != 0, Errors::INVALID_MINT_AMOUNT);
 
-            let previous_scaled_balance = self.user_scaled_balances.entry(account).read();
+            let previous_scaled_balance = self.user_scaled_balances.entry(on_behalf_of).read();
             let new_scaled_balance = previous_scaled_balance + amount_scaled;
-            self.user_scaled_balances.entry(account).write(new_scaled_balance);
+            self.user_scaled_balances.entry(on_behalf_of).write(new_scaled_balance);
             self.total_scaled_supply.write(self.total_scaled_supply.read() + amount_scaled);
 
             let mut erc20_component = get_dep_component_mut!(ref self, ERC20);
-            erc20_component.mint(on_behalf_of, amount);
+            erc20_component.mint(caller, amount);
 
             self
                 .emit(
                     Event::Mint(
-                        Mint {
-                            caller: account, on_behalf_of, amount, amount_scaled, liquidity_index,
-                        },
+                        Mint { caller, on_behalf_of, amount, amount_scaled, liquidity_index },
                     ),
                 );
 
