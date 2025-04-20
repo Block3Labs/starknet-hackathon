@@ -193,6 +193,11 @@ pub mod Market {
             self.mint_yt(caller, amount);
         }
 
+        fn buy_yield(
+            ref self: ContractState, buyer: ContractAddress, seller: ContractAddress, amount: u256,
+        ) {// transfer_yt()
+        }
+
         // Redeem YT
         fn claim_yield(ref self: ContractState) {
             assert(self.is_mature(), Errors::NOT_MATURED);
@@ -227,6 +232,9 @@ pub mod Market {
             let liqudity_index = self.liquidity_index.read();
             IYieldTokenDispatcher { contract_address: self.yt_token.read() }
                 .mint(contract_address, recipient, amount, liqudity_index);
+        }
+
+        fn transfer_yt(ref self: ContractState, buyer: ContractAddress, amount: u256) {// Send YT from Market to buyer
         }
 
         fn redeem_yt(ref self: ContractState, amount: u256) {}

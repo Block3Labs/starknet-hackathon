@@ -81,15 +81,21 @@ pub mod Router {
 
         // si quelqu'un buy les yt
         fn swap_underlying_for_yt(
-            ref self: ContractState, market_address: ContractAddress, amount: u256,
-        ) {// fulfill_order
+            ref self: ContractState, market_address: ContractAddress, order_id: u256,
+        ) {// let order = get_order(order_id)
+        // If order exists
+        // Comme ça je peux récuperer le mec qui avait fait l'ordre pour récupérer sa balance
+        // dans le market market.buy_yield(caller, order.seller, amount)
+        // fulfill_order()
         }
 
         // A la fin de la maturité
         fn swap_yt_for_underlying(
             ref self: ContractState, market_address: ContractAddress, amount: u256,
-        ) {
+        ) { // market.claim_yield()
         }
+        // A la fin de la maturité
+    // fn swap_pt_for_underlying()
     }
 
     #[abi(embed_v0)]
