@@ -10,7 +10,6 @@ pub mod YieldFactoryContract {
     };
     use starknet::syscalls::deploy_syscall;
     use starknet::{ClassHash, ContractAddress, SyscallResultTrait};
-    use starknet_hackathon::interfaces::market::{IMarketDispatcher};
 
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
     component!(path: OwnableComponent, storage: ownable, event: OwnableComponentEvent);
@@ -99,17 +98,13 @@ pub mod YieldFactoryContract {
         }
 
         fn deploy_principal_token(
-            ref self: ContractState,
-            market: ContractAddress,
-            name: ByteArray,
-            symbol: ByteArray,
-            decimals: u256,
+            ref self: ContractState, name: ByteArray, symbol: ByteArray, decimals: u256,
         ) -> ContractAddress {
             self.ownable.assert_only_owner();
             self.next_pt_id.write(self.next_pt_id.read() + 1);
             let mut calldata = array![];
 
-            (market, name, symbol, decimals).serialize(ref calldata);
+            (name, symbol).serialize(ref calldata);
 
             let result = deploy_syscall(
                 self.princpal_token_class_hash.read(),
@@ -138,17 +133,13 @@ pub mod YieldFactoryContract {
 
 
         fn deploy_yield_token(
-            ref self: ContractState,
-            market: IMarketDispatcher,
-            name: ByteArray,
-            symbol: ByteArray,
-            decimals: u256,
+            ref self: ContractState, name: ByteArray, symbol: ByteArray, decimals: u256,
         ) -> ContractAddress {
             self.ownable.assert_only_owner();
             self.next_yt_id.write(self.next_yt_id.read() + 1);
 
             let mut calldata = array![];
-            (market, name, symbol, decimals).serialize(ref calldata);
+            (name, symbol, decimals).serialize(ref calldata);
 
             let result = deploy_syscall(
                 self.yield_token_class_hash.read(),
