@@ -1,6 +1,5 @@
 #[starknet::contract]
 pub mod YieldFactoryContract {
-    use core::byte_array::ByteArrayTrait;
     use core::traits::{Into, TryInto};
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::access::ownable::ownable::OwnableComponent::InternalTrait as OwnableInternalTrait;
@@ -10,8 +9,8 @@ pub mod YieldFactoryContract {
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
     use starknet::syscalls::deploy_syscall;
-    use starknet::{ClassHash, ContractAddress, SyscallResultTrait, get_block_timestamp};
-    use starknet_hackathon::interfaces::market::{IMarketDispatcher, IMarketDispatcherTrait};
+    use starknet::{ClassHash, ContractAddress, SyscallResultTrait};
+    use starknet_hackathon::interfaces::market::{IMarketDispatcher};
 
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
     component!(path: OwnableComponent, storage: ownable, event: OwnableComponentEvent);
@@ -21,9 +20,14 @@ pub mod YieldFactoryContract {
 
     #[storage]
     struct Storage {
-        tokens_addresses: Map<u256, ContractAddress>,
-        tokens_ids: Map<ContractAddress, u256>,
-        next_token_id: u256,
+        princpal_token_class_hash: ClassHash,
+        yield_token_class_hash: ClassHash,
+        princpal_token_addresses: Map<u256, ContractAddress>,
+        yield_token_addresses: Map<u256, ContractAddress>,
+        yt_ids: Map<ContractAddress, u256>,
+        pt_ids: Map<ContractAddress, u256>,
+        next_yt_id: u256,
+        next_pt_id: u256,
         #[substorage(v0)]
         upgradeable: UpgradeableComponent::Storage,
         #[substorage(v0)]
@@ -33,7 +37,8 @@ pub mod YieldFactoryContract {
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
-        NewContractDeployed: NewContractDeployed,
+        NewPrincipalTokanDeployed: NewPrincipalTokanDeployed,
+        NewYieldTokenDeployed: NewYieldTokenDeployed,
         #[flat]
         UpgradeableEvent: UpgradeableComponent::Event,
         #[flat]
@@ -41,7 +46,14 @@ pub mod YieldFactoryContract {
     }
 
     #[derive(Drop, starknet::Event)]
-    pub struct NewContractDeployed {
+    pub struct NewPrincipalTokanDeployed {
+        #[key]
+        pub id: u256,
+        pub principal_token_address: ContractAddress,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    pub struct NewYieldTokenDeployed {
         #[key]
         pub id: u256,
         pub yield_token_address: ContractAddress,
@@ -57,58 +69,115 @@ pub mod YieldFactoryContract {
         ContractState,
     > {
         fn exists(self: @ContractState, token_address: ContractAddress) -> bool {
-            if self.tokens_ids.entry(token_address).read() != 0 {
+            if self.pt_ids.entry(token_address).read() != 0 {
                 true
             } else {
                 false
             }
         }
 
-        fn get_last_deployed_token(self: @ContractState) -> ContractAddress {
-            let next_id = self.next_token_id.read();
+        fn get_last_deployed_yt(self: @ContractState) -> ContractAddress {
+            let next_id = self.next_yt_id.read();
             assert(next_id > 0, 'NO_CONTRACT_DEPLOYED');
-            self.tokens_addresses.entry(next_id).read()
+            self.yield_token_addresses.entry(next_id).read()
         }
 
-        fn get_token_id(self: @ContractState, token_address: ContractAddress) -> u256 {
-            self.tokens_ids.entry(token_address).read()
+
+        fn get_last_deployed_pt(self: @ContractState) -> ContractAddress {
+            let next_id = self.next_pt_id.read();
+            assert(next_id > 0, 'NO_CONTRACT_DEPLOYED');
+            self.princpal_token_addresses.entry(next_id).read()
         }
 
-        fn deploy_new_token(
+
+        fn get_yt_id(self: @ContractState, token_address: ContractAddress) -> u256 {
+            self.yt_ids.entry(token_address).read()
+        }
+
+        fn get_pt_id(self: @ContractState, token_address: ContractAddress) -> u256 {
+            self.pt_ids.entry(token_address).read()
+        }
+
+        fn deploy_yield_token(
             ref self: ContractState,
-            contract_class_hash: ClassHash,
             market: IMarketDispatcher,
             name: ByteArray,
             symbol: ByteArray,
             decimals: u256,
         ) -> ContractAddress {
             self.ownable.assert_only_owner();
-            self.next_token_id.write(self.next_token_id.read() + 1);
-            let admin_address = self.ownable.owner();
-            let mut calldata: Array =
-                array![ // market.into(), name.into(), symbol.into(), decimals.into(),
-            ];
+            self.next_yt_id.write(self.next_yt_id.read() + 1);
+
+            let mut calldata = array![];
+            (market, name, symbol, decimals).serialize(ref calldata);
 
             let result = deploy_syscall(
-                contract_class_hash,
-                self.next_token_id.read().try_into().unwrap(),
+                self.yield_token_class_hash.read(),
+                self.next_yt_id.read().try_into().unwrap(),
                 calldata.span(),
                 false,
             );
             let (deployed_token_address, _) = result.unwrap_syscall();
-            self.tokens_addresses.entry(self.next_token_id.read()).write(deployed_token_address);
-            self.tokens_ids.entry(deployed_token_address).write(self.next_token_id.read());
+            self.yield_token_addresses.entry(self.next_yt_id.read()).write(deployed_token_address);
+            self.yt_ids.entry(deployed_token_address).write(self.next_yt_id.read());
             self
                 .emit(
-                    Event::NewContractDeployed(
-                        NewContractDeployed {
-                            id: self.next_token_id.read(),
-                            yield_token_address: deployed_token_address,
+                    Event::NewYieldTokenDeployed(
+                        NewYieldTokenDeployed {
+                            id: self.next_yt_id.read(), yield_token_address: deployed_token_address,
                         },
                     ),
                 );
 
             deployed_token_address
+        }
+
+
+        fn deploy_principal_token(
+            ref self: ContractState,
+            market: ContractAddress,
+            name: ByteArray,
+            symbol: ByteArray,
+            decimals: u256,
+        ) -> ContractAddress {
+            self.ownable.assert_only_owner();
+            self.next_pt_id.write(self.next_pt_id.read() + 1);
+            let mut calldata = array![];
+
+            (market, name, symbol, decimals).serialize(ref calldata);
+
+            let result = deploy_syscall(
+                self.princpal_token_class_hash.read(),
+                self.next_pt_id.read().try_into().unwrap(),
+                calldata.span(),
+                false,
+            );
+            let (deployed_token_address, _) = result.unwrap_syscall();
+            self
+                .princpal_token_addresses
+                .entry(self.next_pt_id.read())
+                .write(deployed_token_address);
+            self.pt_ids.entry(deployed_token_address).write(self.next_pt_id.read());
+            self
+                .emit(
+                    Event::NewPrincipalTokanDeployed(
+                        NewPrincipalTokanDeployed {
+                            id: self.next_pt_id.read(),
+                            principal_token_address: deployed_token_address,
+                        },
+                    ),
+                );
+
+            deployed_token_address
+        }
+
+
+        fn set_principal_token_class_hash(ref self: ContractState, contract_class_hash: ClassHash) {
+            self.princpal_token_class_hash.write(contract_class_hash);
+        }
+
+        fn set_yield_token_class_hash(ref self: ContractState, contract_class_hash: ClassHash) {
+            self.yield_token_class_hash.write(contract_class_hash);
         }
 
 

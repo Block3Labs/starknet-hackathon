@@ -1,4 +1,3 @@
-
 #[starknet::contract]
 pub mod PrincipalToken {
     use ERC20Component::InternalTrait;
@@ -30,7 +29,7 @@ pub mod PrincipalToken {
 
     #[storage]
     struct Storage {
-        market: IMarketDispatcher,
+        market: ContractAddress,
         #[substorage(v0)]
         erc20: ERC20Component::Storage,
         #[substorage(v0)]
@@ -57,7 +56,7 @@ pub mod PrincipalToken {
 
     #[constructor]
     fn constructor(
-        ref self: ContractState, market: IMarketDispatcher, name: ByteArray, symbol: ByteArray,
+        ref self: ContractState, market: ContractAddress, name: ByteArray, symbol: ByteArray,
     ) {
         self.market.write(market);
         self.erc20.initializer(name, symbol);
@@ -68,8 +67,7 @@ pub mod PrincipalToken {
         ContractState,
     > {
         fn underlying_asset_address(self: @ContractState) -> ContractAddress {
-            IMarketDispatcher { contract_address: self.market.read().contract_address }
-                .underlying_asset_address()
+            IMarketDispatcher { contract_address: self.market.read() }.underlying_asset_address()
         }
     }
 }

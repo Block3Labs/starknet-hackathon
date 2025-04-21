@@ -76,6 +76,11 @@ pub mod DefiSpring {
             self.indexRate.write(newIndex);
         }
 
+        fn set_apr(ref self: ContractState, newIndex: u256) {
+            self.indexRate.write(newIndex);
+        }
+
+
         fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
             self.ownable.assert_only_owner();
             self.upgradeable.upgrade(new_class_hash);
