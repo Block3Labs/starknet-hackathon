@@ -10,7 +10,6 @@ pub mod OrderBook {
     };
     use starknet_hackathon::interfaces::market::{IMarketDispatcher, IMarketDispatcherTrait};
 
-    //use array::ArrayTrait;
 
     #[storage]
     pub struct Storage {
@@ -19,6 +18,7 @@ pub mod OrderBook {
         defi_spring_address: ContractAddress,
         next_order_id: u256,
         order_list: Map::<u256, Order>,
+        user_orders: Map::<(ContractAddress, u256), Order> //UserAddr + id => Order
     }
 
     #[event]
@@ -30,11 +30,16 @@ pub mod OrderBook {
     #[derive(Copy, Drop, starknet::Event)]
     pub struct OrderListed {
         #[key]
-        next_oder_id: u256,
+        order_id: u256,
         sender: ContractAddress,
-        // amount , apy ,price , lock , duration
-
     }
+    #[derive(Copy, Drop, starknet::Event)]
+    pub struct BuyOrder {
+        #[key]
+        order_id: u256,
+        buyer: ContractAddress,
+    }
+
 
     #[derive(Copy, Drop, Serde, Hash, starknet::Store)]
     pub struct Order {
@@ -43,8 +48,7 @@ pub mod OrderBook {
         amount: u256,
         apy: u256,
         isSold: bool,
-        // price: u256,
-    // duration: u256,
+        // price: u256,// duration: u256,
     }
 
     #[constructor]
@@ -67,7 +71,6 @@ pub mod OrderBook {
             let apy = IDefiSpringDispatcher { contract_address: self.defi_spring_address.read() }
                 .get_apr();
 
-            // mettre le preview_redeem_yt ??
             let UserOrder = Order {
                 id: self.next_order_id.read(),
                 seller: caller,
@@ -77,7 +80,7 @@ pub mod OrderBook {
             };
 
             self.order_list.entry(self.next_order_id.read()).write(UserOrder);
-
+            self.user_orders.entry((caller, self.next_order_id.read())).write(UserOrder);
             self.next_order_id.write(self.next_order_id.read() + 1);
         }
 
@@ -124,6 +127,18 @@ pub mod OrderBook {
 
         fn get_orders_length(self: @ContractState) -> u256 {
             self.next_order_id.read() - 1
+        }
+
+        fn get_user_order(self: @ContractState, user: ContractAddress, id: u256) -> Order {
+            self.user_orders.entry((user, id)).read()
+        }
+
+        fn exist(self: @ContractState, order_id: u256) -> bool {
+            if (self.order_list.entry(order_id).read().id != 0) {
+                return true;
+            } else {
+                return false;
+            }
         }
     }
 }
