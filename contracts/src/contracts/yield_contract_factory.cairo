@@ -1,6 +1,6 @@
 #[starknet::contract]
 pub mod YieldFactoryContract {
-    use core::byte_array::ByteArrayTrait;
+    //use core::byte_array::ByteArrayTrait;
     use core::traits::{Into, TryInto};
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::access::ownable::ownable::OwnableComponent::InternalTrait as OwnableInternalTrait;
@@ -10,8 +10,8 @@ pub mod YieldFactoryContract {
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
     use starknet::syscalls::deploy_syscall;
-    use starknet::{ClassHash, ContractAddress, SyscallResultTrait, get_block_timestamp};
-    use starknet_hackathon::interfaces::market::{IMarketDispatcher, IMarketDispatcherTrait};
+    use starknet::{ClassHash, ContractAddress, SyscallResultTrait};
+    use starknet_hackathon::interfaces::market::{IMarketDispatcher};
 
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
     component!(path: OwnableComponent, storage: ownable, event: OwnableComponentEvent);
@@ -84,7 +84,7 @@ pub mod YieldFactoryContract {
         ) -> ContractAddress {
             self.ownable.assert_only_owner();
             self.next_token_id.write(self.next_token_id.read() + 1);
-            let admin_address = self.ownable.owner();
+            //let admin_address = self.ownable.owner();
             let mut calldata: Array =
                 array![ // market.into(), name.into(), symbol.into(), decimals.into(),
             ];
