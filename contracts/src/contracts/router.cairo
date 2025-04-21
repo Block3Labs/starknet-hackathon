@@ -64,8 +64,6 @@ pub mod Router {
             assert(amount != 0, Errors::INVALID_SWAP_AMOUNT);
             // has enough token
 
-            let order_book_addr =
-                get_caller_address(); //<- À confirmer (set l'addr dans le routeur ou dans le market ??)
             let caller = get_caller_address();
             let market = IMarketDispatcher { contract_address: market_address };
             let underlying_token = IERC20Dispatcher {
@@ -80,9 +78,8 @@ pub mod Router {
 
             market.deposit(caller, amount);
 
-            // create_order()
-            let order_book = IOrderBookDispatcher { contract_address: order_book_addr };
-            order_book.create_order(amount, caller);
+            let orderbook = IOrderBookDispatcher { contract_address: market.orderbook_address() };
+            orderbook.create_order(amount, caller);
 
             self.emit(Deposit { user: caller, amount, pt_received: amount, yt_locked: amount });
         }
