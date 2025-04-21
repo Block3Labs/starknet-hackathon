@@ -4,11 +4,15 @@ pub mod Router {
     use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use openzeppelin_upgrades::UpgradeableComponent;
     use openzeppelin_upgrades::interface::IUpgradeable;
+    use starknet::storage::{
+        Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
+    };
     use starknet::{ClassHash, ContractAddress, get_caller_address};
     use starknet_hackathon::interfaces::market::{IMarketDispatcher, IMarketDispatcherTrait};
+    use starknet_hackathon::interfaces::orderbook::{
+        IOrderBookDispatcher, IOrderBookDispatcherTrait,
+    };
     use starknet_hackathon::interfaces::router::IRouter;
-    use starknet_hackathon::interfaces::orderbook::{IOrderBookDispatcher,IOrderBookDispatcherTrait};
-
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
 
@@ -19,6 +23,7 @@ pub mod Router {
 
     #[storage]
     struct Storage {
+        order_book_addr: ContractAddress,
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
         #[substorage(v0)]
@@ -60,7 +65,6 @@ pub mod Router {
             ref self: ContractState, market_address: ContractAddress, amount: u256,
         ) {
             assert(amount != 0, Errors::INVALID_SWAP_AMOUNT);
-            let order_book_addr = get_caller_address(); //<- À confirmer (set l'addr dans le routeur ou dans le market ??)
             let caller = get_caller_address();
             let market = IMarketDispatcher { contract_address: market_address };
             let underlying_token = IERC20Dispatcher {
@@ -76,11 +80,8 @@ pub mod Router {
             market.deposit(caller, amount);
 
             // create_order()
-            let order_book = IOrderBookDispatcher{
-                contract_address: order_book_addr
-            };
-            order_book.create_order(amount,caller);
-           
+            let order_book = IOrderBookDispatcher { contract_address: self.order_book_addr.read() };
+            order_book.create_order(amount, caller);
 
             self.emit(Deposit { user: caller, amount, pt_received: amount, yt_locked: amount });
         }
@@ -88,13 +89,16 @@ pub mod Router {
         // si quelqu'un buy les yt
         fn swap_underlying_for_yt(
             ref self: ContractState, market_address: ContractAddress, amount: u256,
-        ) {// fulfill_order
+        ) { // fulfill_order
         }
 
         // A la fin de la maturité
         fn swap_yt_for_underlying(
             ref self: ContractState, market_address: ContractAddress, amount: u256,
-        ) {
+        ) {}
+
+        fn set_order_book_addr(ref self: ContractState, order_book_address: ContractAddress) {
+            self.order_book_addr.write(order_book_address);
         }
     }
 

@@ -10,6 +10,7 @@ pub mod OrderBook {
     };
     use starknet_hackathon::interfaces::market::{IMarketDispatcher, IMarketDispatcherTrait};
 
+    //use array::ArrayTrait;
 
     #[storage]
     pub struct Storage {
@@ -17,17 +18,17 @@ pub mod OrderBook {
         paying_token_address: ContractAddress,
         defi_spring_address: ContractAddress,
         next_order_id: u256,
-        order_list: Map::<u256, Position>,
+        order_list: Map::<u256, Order>,
     }
 
     #[event]
     #[derive(Copy, Drop, starknet::Event)]
     pub enum Event {
-        PositionListed: PositionListed,
+        OrderListed: OrderListed,
     }
 
     #[derive(Copy, Drop, starknet::Event)]
-    pub struct PositionListed {
+    pub struct OrderListed {
         #[key]
         next_oder_id: u256,
         sender: ContractAddress,
@@ -36,7 +37,7 @@ pub mod OrderBook {
     }
 
     #[derive(Copy, Drop, Serde, Hash, starknet::Store)]
-    pub struct Position {
+    pub struct Order {
         id: u256,
         seller: ContractAddress,
         amount: u256,
@@ -67,7 +68,7 @@ pub mod OrderBook {
                 .get_apr();
 
             // mettre le preview_redeem_yt ??
-            let UserPosition = Position {
+            let UserOrder = Order {
                 id: self.next_order_id.read(),
                 seller: caller,
                 amount: amount,
@@ -75,9 +76,10 @@ pub mod OrderBook {
                 isSold: false,
             };
 
-            self.order_list.entry(self.next_order_id.read()).write(UserPosition);
+            self.order_list.entry(self.next_order_id.read()).write(UserOrder);
 
             self.next_order_id.write(self.next_order_id.read() + 1);
+            //self.order_array.append(UserOrder);
         }
 
 
@@ -86,7 +88,7 @@ pub mod OrderBook {
 
             assert(order.isSold == false, 'order Already Sold');
 
-            let current_order = Position {
+            let current_order = Order {
                 id: order.id,
                 seller: order.seller,
                 amount: order.amount,
@@ -105,7 +107,7 @@ pub mod OrderBook {
 
             assert(order.isSold == false, 'order Already Sold');
 
-            let current_order = Position {
+            let current_order = Order {
                 id: order.id,
                 seller: order.seller,
                 amount: order.amount,
@@ -116,7 +118,7 @@ pub mod OrderBook {
             self.order_list.entry(last_order).write(current_order);
         }
 
-        fn get_order_info(self: @ContractState, order_id: u256) -> Position {
+        fn get_order_info(self: @ContractState, order_id: u256) -> Order {
             let order = self.order_list.entry(order_id).read();
             order
         }
@@ -124,6 +126,5 @@ pub mod OrderBook {
         fn get_order_length(self: @ContractState) -> u256 {
             self.next_order_id.read() - 1
         }
-        
     }
 }
