@@ -38,8 +38,8 @@ pub mod OrderBook {
     #[derive(Copy, Drop, Serde, Hash, starknet::Store)]
     pub struct Position {
         id: u256,
-        seller: ContractAddress,
-        amount: u256,
+        pub seller: ContractAddress,
+        pub amount: u256,
         apy: u256,
         isSold: bool,
         // price: u256,

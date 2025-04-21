@@ -92,14 +92,12 @@ pub mod Router {
             ref self: ContractState, market_address: ContractAddress, order_id: u256,
         ) {
             let caller = get_caller_address();
-            // let order = get_order(order_id)
-            // If order exists
-            // Comme ça je peux récuperer le mec qui avait fait l'ordre pour récupérer sa
-            // balance dans le market market.buy_yield(caller, order.seller, amount)
             let market = IMarketDispatcher { contract_address: market_address };
             let orderbook = IOrderBookDispatcher { contract_address: market.orderbook_address() };
-            // market.buy_yield(caller, );
-        // fulfill_order()
+
+            let order = orderbook.get_order_info(order_id);
+            market.buy_yield(caller, order.seller, order.amount);
+            // fulfill_order()
         }
 
         // A la fin de la maturité
