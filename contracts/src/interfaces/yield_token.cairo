@@ -4,6 +4,7 @@ use starknet::ContractAddress;
 pub trait IYieldToken<TContractState> {
     fn underlying_asset_address(self: @TContractState) -> ContractAddress;
 
+    fn set_market_address(ref self: TContractState, market_address: ContractAddress);
     fn mint(
         ref self: TContractState,
         caller: ContractAddress,

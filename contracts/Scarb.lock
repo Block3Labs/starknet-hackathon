@@ -147,7 +147,10 @@ dependencies = [
 name = "starknet_hackathon"
 version = "0.1.0"
 dependencies = [
+ "openzeppelin",
+ "openzeppelin_access",
  "openzeppelin_token",
+ "openzeppelin_upgrades",
  "pragma_lib",
  "snforge_std",
 ]

@@ -104,7 +104,7 @@ pub mod ScaledBalanceTokenComponent {
             self.total_scaled_supply.write(self.total_scaled_supply.read() + amount_scaled);
 
             let mut erc20_component = get_dep_component_mut!(ref self, ERC20);
-            erc20_component.mint(on_behalf_of, amount);
+            erc20_component.mint(caller, amount);
 
             self
                 .emit(
