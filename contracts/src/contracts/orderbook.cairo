@@ -79,7 +79,6 @@ pub mod OrderBook {
             self.order_list.entry(self.next_order_id.read()).write(UserOrder);
 
             self.next_order_id.write(self.next_order_id.read() + 1);
-            //self.order_array.append(UserOrder);
         }
 
 
@@ -118,12 +117,12 @@ pub mod OrderBook {
             self.order_list.entry(last_order).write(current_order);
         }
 
-        fn get_order_info(self: @ContractState, order_id: u256) -> Order {
+        fn get_order(self: @ContractState, order_id: u256) -> Order {
             let order = self.order_list.entry(order_id).read();
             order
         }
 
-        fn get_order_length(self: @ContractState) -> u256 {
+        fn get_orders_length(self: @ContractState) -> u256 {
             self.next_order_id.read() - 1
         }
     }
