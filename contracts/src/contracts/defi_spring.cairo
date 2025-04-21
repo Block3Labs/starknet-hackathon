@@ -10,7 +10,6 @@ pub mod DefiSpring {
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
     use starknet::{ClassHash, ContractAddress};
 
-
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
@@ -24,11 +23,10 @@ pub mod DefiSpring {
     impl SRC5Impl = SRC5Component::SRC5Impl<ContractState>;
     impl SRC5InternalImpl = SRC5Component::InternalImpl<ContractState>;
 
-
     #[storage]
     struct Storage {
         decimals: u8,
-        indexRate: u256,
+        apr: u256,
         #[substorage(v0)]
         erc20: ERC20Component::Storage,
         #[substorage(v0)]
@@ -38,7 +36,6 @@ pub mod DefiSpring {
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
     }
-
 
     #[event]
     #[derive(Drop, starknet::Event)]
@@ -56,7 +53,7 @@ pub mod DefiSpring {
     #[constructor]
     fn constructor(ref self: ContractState, name: ByteArray, symbol: ByteArray) {
         self.erc20.initializer(name, symbol);
-        self.indexRate.write(1000) //10% bps
+        self.apr.write(1000) //10% bps
     }
 
     #[abi(embed_v0)]
@@ -68,11 +65,11 @@ pub mod DefiSpring {
         }
 
         fn get_apr(self: @ContractState) -> u256 {
-            self.indexRate.read()
+            self.apr.read()
         }
 
-        fn update_apr(ref self: ContractState, newIndex: u256) {
-            self.indexRate.write(newIndex);
+        fn update_apr(ref self: ContractState, new_apr: u256) {
+            self.apr.write(new_apr);
         }
 
         fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {

@@ -12,7 +12,6 @@ pub mod PrincipalToken {
     use starknet::{ClassHash, ContractAddress, get_caller_address};
     use starknet_hackathon::interfaces::market::{IMarketDispatcher, IMarketDispatcherTrait};
 
-
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
@@ -26,7 +25,6 @@ pub mod PrincipalToken {
     impl SRC5Impl = SRC5Component::SRC5Impl<ContractState>;
     impl SRC5InternalImpl = SRC5Component::InternalImpl<ContractState>;
 
-
     #[storage]
     struct Storage {
         market: IMarketDispatcher,
@@ -39,7 +37,6 @@ pub mod PrincipalToken {
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
     }
-
 
     #[event]
     #[derive(Drop, starknet::Event)]

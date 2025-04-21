@@ -11,5 +11,5 @@ pub trait IDefiSpring<TContractState> {
     fn upgrade(ref self: TContractState, new_class_hash: ClassHash);
     fn claim(ref self: TContractState, address: ContractAddress);
     fn get_apr(self: @TContractState) -> u256;
-    fn update_apr(ref self: TContractState, newIndex: u256);
+    fn update_apr(ref self: TContractState, new_apr: u256);
 }

@@ -1,6 +1,5 @@
 #[starknet::contract]
 pub mod YieldFactoryContract {
-    //use core::byte_array::ByteArrayTrait;
     use core::traits::{Into, TryInto};
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::access::ownable::ownable::OwnableComponent::InternalTrait as OwnableInternalTrait;
