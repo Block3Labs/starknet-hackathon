@@ -93,8 +93,15 @@ pub mod Router {
             let caller = get_caller_address();
             let market = IMarketDispatcher { contract_address: market_address };
             let orderbook = IOrderBookDispatcher { contract_address: market.orderbook_address() };
+            let underlying_token = IERC20Dispatcher {
+                contract_address: market.underlying_asset_address(),
+            };
 
             let order = orderbook.get_order_info(order_id);
+            assert(
+                underlying_token.balance_of(caller) >= order.amount, Errors::INSUFFICIENT_BALANCE,
+            );
+
             market.buy_yield(caller, order.seller, order.amount);
             // fulfill_order()
         }
