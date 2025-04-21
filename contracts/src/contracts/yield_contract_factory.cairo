@@ -98,41 +98,6 @@ pub mod YieldFactoryContract {
             self.pt_ids.entry(token_address).read()
         }
 
-        fn deploy_yield_token(
-            ref self: ContractState,
-            market: IMarketDispatcher,
-            name: ByteArray,
-            symbol: ByteArray,
-            decimals: u256,
-        ) -> ContractAddress {
-            self.ownable.assert_only_owner();
-            self.next_yt_id.write(self.next_yt_id.read() + 1);
-
-            let mut calldata = array![];
-            (market, name, symbol, decimals).serialize(ref calldata);
-
-            let result = deploy_syscall(
-                self.yield_token_class_hash.read(),
-                self.next_yt_id.read().try_into().unwrap(),
-                calldata.span(),
-                false,
-            );
-            let (deployed_token_address, _) = result.unwrap_syscall();
-            self.yield_token_addresses.entry(self.next_yt_id.read()).write(deployed_token_address);
-            self.yt_ids.entry(deployed_token_address).write(self.next_yt_id.read());
-            self
-                .emit(
-                    Event::NewYieldTokenDeployed(
-                        NewYieldTokenDeployed {
-                            id: self.next_yt_id.read(), yield_token_address: deployed_token_address,
-                        },
-                    ),
-                );
-
-            deployed_token_address
-        }
-
-
         fn deploy_principal_token(
             ref self: ContractState,
             market: ContractAddress,
@@ -164,6 +129,41 @@ pub mod YieldFactoryContract {
                         NewPrincipalTokanDeployed {
                             id: self.next_pt_id.read(),
                             principal_token_address: deployed_token_address,
+                        },
+                    ),
+                );
+
+            deployed_token_address
+        }
+
+
+        fn deploy_yield_token(
+            ref self: ContractState,
+            market: IMarketDispatcher,
+            name: ByteArray,
+            symbol: ByteArray,
+            decimals: u256,
+        ) -> ContractAddress {
+            self.ownable.assert_only_owner();
+            self.next_yt_id.write(self.next_yt_id.read() + 1);
+
+            let mut calldata = array![];
+            (market, name, symbol, decimals).serialize(ref calldata);
+
+            let result = deploy_syscall(
+                self.yield_token_class_hash.read(),
+                self.next_yt_id.read().try_into().unwrap(),
+                calldata.span(),
+                false,
+            );
+            let (deployed_token_address, _) = result.unwrap_syscall();
+            self.yield_token_addresses.entry(self.next_yt_id.read()).write(deployed_token_address);
+            self.yt_ids.entry(deployed_token_address).write(self.next_yt_id.read());
+            self
+                .emit(
+                    Event::NewYieldTokenDeployed(
+                        NewYieldTokenDeployed {
+                            id: self.next_yt_id.read(), yield_token_address: deployed_token_address,
                         },
                     ),
                 );

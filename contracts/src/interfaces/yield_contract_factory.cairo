@@ -1,5 +1,5 @@
 use starknet::{ClassHash, ContractAddress};
-use starknet_hackathon::interfaces::market::{IMarketDispatcher, IMarketDispatcherTrait};
+use starknet_hackathon::interfaces::market::{IMarketDispatcher};
 
 #[starknet::interface]
 pub trait ITokenFactory<TContractState> {
