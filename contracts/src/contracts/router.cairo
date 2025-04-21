@@ -7,6 +7,7 @@ pub mod Router {
     use starknet::{ClassHash, ContractAddress, get_caller_address};
     use starknet_hackathon::interfaces::market::{IMarketDispatcher, IMarketDispatcherTrait};
     use starknet_hackathon::interfaces::router::IRouter;
+    use starknet_hackathon::interfaces::orderbook::{IOrderBookDispatcher,IOrderBookDispatcherTrait};
 
     component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
@@ -61,6 +62,7 @@ pub mod Router {
             assert(amount != 0, Errors::INVALID_SWAP_AMOUNT);
             // has enough token
 
+            let order_book_addr = get_caller_address(); //<- À confirmer (set l'addr dans le routeur ou dans le market ??)
             let caller = get_caller_address();
             let market = IMarketDispatcher { contract_address: market_address };
             let underlying_token = IERC20Dispatcher {
@@ -76,6 +78,11 @@ pub mod Router {
             market.deposit(caller, amount);
 
             // create_order()
+            let order_book = IOrderBookDispatcher{
+                contract_address: order_book_addr
+            };
+            order_book.create_order(amount,caller);
+           
 
             self.emit(Deposit { user: caller, amount, pt_received: amount, yt_locked: amount });
         }
