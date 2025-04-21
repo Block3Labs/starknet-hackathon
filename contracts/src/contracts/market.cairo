@@ -32,6 +32,7 @@ pub mod Market {
     pub struct Storage {
         market_name: ByteArray,
         underlying_asset: ContractAddress,
+        orderbook_address: ContractAddress,
         pt_token: ContractAddress,
         yt_token: ContractAddress,
         maturity_timestamp: u64,
@@ -129,6 +130,10 @@ pub mod Market {
             self.underlying_asset.read()
         }
 
+        fn orderbook_address(self: @ContractState) -> ContractAddress {
+            self.orderbook_address.read()
+        }
+
         fn maturity_timestamp(self: @ContractState) -> u64 {
             self.maturity_timestamp.read()
         }
@@ -195,7 +200,7 @@ pub mod Market {
 
         fn buy_yield(
             ref self: ContractState, buyer: ContractAddress, seller: ContractAddress, amount: u256,
-        ) {// transfer_yt()
+        ) { // transfer_yt()
         }
 
         // Redeem YT
@@ -234,7 +239,9 @@ pub mod Market {
                 .mint(contract_address, recipient, amount, liqudity_index);
         }
 
-        fn transfer_yt(ref self: ContractState, buyer: ContractAddress, amount: u256) {// Send YT from Market to buyer
+        fn transfer_yt(
+            ref self: ContractState, buyer: ContractAddress, amount: u256,
+        ) { // Send YT from Market to buyer
         }
 
         fn redeem_yt(ref self: ContractState, amount: u256) {}

@@ -1,4 +1,3 @@
-
 #[starknet::contract]
 pub mod PrincipalToken {
     use ERC20Component::InternalTrait;

@@ -124,6 +124,5 @@ pub mod OrderBook {
         fn get_order_length(self: @ContractState) -> u256 {
             self.next_order_id.read() - 1
         }
-        
     }
 }
