@@ -1,5 +1,4 @@
 use starknet::{ClassHash, ContractAddress};
-use starknet_hackathon::interfaces::market::{IMarketDispatcher};
 
 #[starknet::interface]
 pub trait ITokenFactory<TContractState> {
@@ -13,7 +12,6 @@ pub trait ITokenFactory<TContractState> {
 
     fn deploy_yield_token(
         ref self: TContractState,
-        market: IMarketDispatcher,
         name: ByteArray,
         symbol: ByteArray,
         decimals: u256,
@@ -21,7 +19,6 @@ pub trait ITokenFactory<TContractState> {
 
     fn deploy_principal_token(
         ref self: TContractState,
-        market: ContractAddress,
         name: ByteArray,
         symbol: ByteArray,
         decimals: u256,
