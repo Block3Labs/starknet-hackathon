@@ -16,6 +16,7 @@ pub mod interfaces {
     pub mod router;
     pub mod scaled_balance_token;
     pub mod yield_token;
+    pub mod defi_spring;
 }
 
 pub mod utils {
