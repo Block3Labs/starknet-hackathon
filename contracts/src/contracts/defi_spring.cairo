@@ -3,13 +3,12 @@ pub mod DefiSpring {
     use ERC20Component::InternalTrait;
     use openzeppelin::access::ownable::OwnableComponent;
     use openzeppelin::access::ownable::ownable::OwnableComponent::InternalTrait as OwnableInternalTrait;
-    use openzeppelin::introspection::interface::ISRC5_ID;
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::token::erc20::{ERC20Component, ERC20HooksEmptyImpl};
     use openzeppelin::upgrades::upgradeable::UpgradeableComponent;
     use openzeppelin::upgrades::upgradeable::UpgradeableComponent::InternalTrait as UpgradeableInternalTrait;
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
-    use starknet::{ClassHash, ContractAddress, get_caller_address};
+    use starknet::{ClassHash, ContractAddress};
 
 
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
@@ -75,6 +74,11 @@ pub mod DefiSpring {
         fn update_apr(ref self: ContractState, newIndex: u256) {
             self.indexRate.write(newIndex);
         }
+
+        fn set_apr(ref self: ContractState, newIndex: u256) {
+            self.indexRate.write(newIndex);
+        }
+
 
         fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
             self.ownable.assert_only_owner();

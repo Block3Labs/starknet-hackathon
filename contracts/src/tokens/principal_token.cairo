@@ -1,16 +1,12 @@
-
 #[starknet::contract]
 pub mod PrincipalToken {
     use ERC20Component::InternalTrait;
     use openzeppelin::access::ownable::OwnableComponent;
-    use openzeppelin::access::ownable::ownable::OwnableComponent::InternalTrait as OwnableInternalTrait;
-    use openzeppelin::introspection::interface::ISRC5_ID;
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::token::erc20::{ERC20Component, ERC20HooksEmptyImpl};
     use openzeppelin::upgrades::upgradeable::UpgradeableComponent;
-    use openzeppelin::upgrades::upgradeable::UpgradeableComponent::InternalTrait as UpgradeableInternalTrait;
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
-    use starknet::{ClassHash, ContractAddress, get_caller_address};
+    use starknet::{ContractAddress};
     use starknet_hackathon::interfaces::market::{IMarketDispatcher, IMarketDispatcherTrait};
 
 
@@ -30,7 +26,7 @@ pub mod PrincipalToken {
 
     #[storage]
     struct Storage {
-        market: IMarketDispatcher,
+        market: ContractAddress,
         #[substorage(v0)]
         erc20: ERC20Component::Storage,
         #[substorage(v0)]
@@ -57,7 +53,7 @@ pub mod PrincipalToken {
 
     #[constructor]
     fn constructor(
-        ref self: ContractState, market: IMarketDispatcher, name: ByteArray, symbol: ByteArray,
+        ref self: ContractState, market: ContractAddress, name: ByteArray, symbol: ByteArray,
     ) {
         self.market.write(market);
         self.erc20.initializer(name, symbol);
@@ -68,8 +64,7 @@ pub mod PrincipalToken {
         ContractState,
     > {
         fn underlying_asset_address(self: @ContractState) -> ContractAddress {
-            IMarketDispatcher { contract_address: self.market.read().contract_address }
-                .underlying_asset_address()
+            IMarketDispatcher { contract_address: self.market.read() }.underlying_asset_address()
         }
     }
 }
