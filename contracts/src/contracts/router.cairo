@@ -49,6 +49,7 @@ pub mod Router {
     mod Errors {
         pub const INVALID_BALANCE: felt252 = 'Invalid market balance';
         pub const INVALID_SWAP_AMOUNT: felt252 = 'Amount must be greater than 0';
+        pub const INSUFFICIENT_BALANCE: felt252 = 'Insufficient balance';
     }
 
     #[constructor]
@@ -62,13 +63,14 @@ pub mod Router {
             ref self: ContractState, market_address: ContractAddress, amount: u256,
         ) {
             assert(amount != 0, Errors::INVALID_SWAP_AMOUNT);
-            // has enough token
 
             let caller = get_caller_address();
             let market = IMarketDispatcher { contract_address: market_address };
             let underlying_token = IERC20Dispatcher {
                 contract_address: market.underlying_asset_address(),
             };
+            assert(underlying_token.balance_of(caller) >= amount, Errors::INSUFFICIENT_BALANCE);
+
             let previous_balance = underlying_token.balance_of(market_address);
             underlying_token.transfer_from(caller, market_address, amount);
             assert(
