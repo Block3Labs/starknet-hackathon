@@ -2,8 +2,10 @@
 pub mod Market {
     use core::num::traits::Zero;
     use openzeppelin_access::ownable::OwnableComponent;
+    use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use openzeppelin_upgrades::UpgradeableComponent;
     use openzeppelin_upgrades::interface::IUpgradeable;
+
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
@@ -196,15 +198,18 @@ pub mod Market {
         // Redeem YT
         fn claim_yield(ref self: ContractState) {
             assert(self.is_mature(), Errors::NOT_MATURED);
+            let caller = get_caller_address();
             //check yt balance
-        //check cb d'underlying asset ont doit lui donner
-        //burn yt (call yt_contract)
-        // transfer underlying asset
+            let yt_token = IERC20Dispatcher { contract_address: self.yt_token.read() };
+            assert(yt_token.balance_of(caller) > 0, 'Wrong balance');
+            //check cb d'underlying asset ont doit lui donner
+            self.preview_redeem_yt(caller);
+            //burn yt (call yt_contract) yt_token.burn(yt_token.balance_of(caller));
+        // transfer underlying asset au user
         }
 
         // Redeem PT
-        fn claim_underlying(ref self: ContractState) {
-        //check pt balance
+        fn claim_underlying(ref self: ContractState) { //check pt balance
         //check cb d'underlying asset ont doit lui donner / normalement 1:1 underlying::pt
         //burn pt (call pt_contract)
         //transfer underlying asset
