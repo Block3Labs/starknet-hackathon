@@ -108,9 +108,13 @@ pub mod Router {
             assert(get_block_timestamp() > maturity, Errors::INVALID_MATURITY);
             let yt_token = IERC20Dispatcher { contract_address: yt_address };
             assert(yt_token.balance_of(caller) > 0, Errors::INVALID_BALANCE);
-            market.claim_yield();
+            let claimable_amount = market.claim_yield();
+            let underlying_token = IERC20Dispatcher {
+                contract_address: market.underlying_asset_address(),
+            };
+            underlying_token.transfer_from(market_address, caller, claimable_amount);
         }
-        
+
         fn set_order_book_addr(ref self: ContractState, order_book_address: ContractAddress) {
             self.order_book_addr.write(order_book_address);
         }

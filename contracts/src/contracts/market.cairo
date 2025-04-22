@@ -196,23 +196,41 @@ pub mod Market {
         }
 
         // Redeem YT
-        fn claim_yield(ref self: ContractState) {
+        fn claim_yield(ref self: ContractState) -> u256 {
             assert(self.is_mature(), Errors::NOT_MATURED);
             let caller = get_caller_address();
-            //check yt balance
-            let yt_token = IERC20Dispatcher { contract_address: self.yt_token.read() };
+
+            //check yt balance & check cb d'underlying asset ont doit lui donner
+            let yt_token = IERC20Dispatcher {
+                contract_address: self.yt_token.read(),
+            }; //==> scaled_balance real YT-Token value with interest - claimable value at maturity
+            let amount_to_redeem = yt_token.balance_of(caller);
+
             assert(yt_token.balance_of(caller) > 0, 'Wrong balance');
-            //check cb d'underlying asset ont doit lui donner
+
+            //CheckRedeemAmount = (scaledBal * TVL_at_maturity) / scaled_total_supply;  <== sanity
+            //check , À Confirmer ou verifié
             self.preview_redeem_yt(caller);
-            //burn yt (call yt_contract) yt_token.burn(yt_token.balance_of(caller));
-        // transfer underlying asset au user
+
+            //burn yt
+            //TO DO : override burn function
+            //yt_token.burn(yt_token.balance_of(caller));
+
+            // underlying_assets.approve.(market_addr,amount_to_redeem)
+
+            amount_to_redeem
+            //==> routeur transfer assets to caller
         }
 
         // Redeem PT
-        fn claim_underlying(ref self: ContractState) { //check pt balance
+        fn claim_underlying(ref self: ContractState) {
+            assert(self.is_mature(), Errors::NOT_MATURED);
+            //check pt balance
         //check cb d'underlying asset ont doit lui donner / normalement 1:1 underlying::pt
         //burn pt (call pt_contract)
-        //transfer underlying asset
+        //return pt to redeem
+        //==> routeur transfer underlying assets to caller  swap_pt_for_underlying()
+
         }
     }
 
