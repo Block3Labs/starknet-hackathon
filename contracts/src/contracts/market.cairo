@@ -196,10 +196,19 @@ pub mod Market {
         // Redeem YT
         fn claim_yield(ref self: ContractState) {
             assert(self.is_mature(), Errors::NOT_MATURED);
+            //check yt balance
+        //check cb d'underlying asset ont doit lui donner
+        //burn yt (call yt_contract)
+        // transfer underlying asset
         }
 
         // Redeem PT
-        fn claim_underlying(ref self: ContractState) {}
+        fn claim_underlying(ref self: ContractState) {
+        //check pt balance
+        //check cb d'underlying asset ont doit lui donner / normalement 1:1 underlying::pt
+        //burn pt (call pt_contract)
+        //transfer underlying asset
+        }
     }
 
     #[abi(embed_v0)]

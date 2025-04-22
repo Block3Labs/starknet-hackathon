@@ -7,7 +7,7 @@ pub mod Router {
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
-    use starknet::{ClassHash, ContractAddress, get_caller_address};
+    use starknet::{ClassHash, ContractAddress, get_block_timestamp, get_caller_address};
     use starknet_hackathon::interfaces::market::{IMarketDispatcher, IMarketDispatcherTrait};
     use starknet_hackathon::interfaces::orderbook::{
         IOrderBookDispatcher, IOrderBookDispatcherTrait,
@@ -52,6 +52,7 @@ pub mod Router {
     mod Errors {
         pub const INVALID_BALANCE: felt252 = 'Invalid market balance';
         pub const INVALID_SWAP_AMOUNT: felt252 = 'Amount must be greater than 0';
+        pub const INVALID_MATURITY: felt252 = 'Maturity Not reached';
     }
 
     #[constructor]
@@ -94,9 +95,22 @@ pub mod Router {
 
         // A la fin de la maturité
         fn swap_yt_for_underlying(
-            ref self: ContractState, market_address: ContractAddress, amount: u256,
-        ) {}
+            ref self: ContractState,
+            market_address: ContractAddress,
+            yt_address: ContractAddress,
+            amount: u256,
+        ) {
+            assert(amount != 0, Errors::INVALID_SWAP_AMOUNT);
 
+            let caller = get_caller_address();
+            let market = IMarketDispatcher { contract_address: market_address };
+            let maturity = market.maturity_timestamp();
+            assert(get_block_timestamp() > maturity, Errors::INVALID_MATURITY);
+            let yt_token = IERC20Dispatcher { contract_address: yt_address };
+            assert(yt_token.balance_of(caller) > 0, Errors::INVALID_BALANCE);
+            market.claim_yield();
+        }
+        
         fn set_order_book_addr(ref self: ContractState, order_book_address: ContractAddress) {
             self.order_book_addr.write(order_book_address);
         }
