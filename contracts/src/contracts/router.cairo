@@ -106,7 +106,7 @@ pub mod Router {
             );
 
             market.buy_yield(caller, order.seller, order.amount);
-            // fulfill_order()
+            orderbook.fulfill_order(order_id);
         }
 
         // A la fin de la maturité

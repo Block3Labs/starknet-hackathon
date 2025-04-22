@@ -1,10 +1,11 @@
 #[starknet::contract]
 pub mod OrderBook {
+    use core::num::traits::{Bounded, Zero};
     use openzeppelin_token::erc20::interface::IERC20;
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
-    use starknet::{ContractAddress};
+    use starknet::{ContractAddress, get_caller_address};
     use starknet_hackathon::interfaces::defi_spring::{
         IDefiSpringDispatcher, IDefiSpringDispatcherTrait,
     };
@@ -48,6 +49,7 @@ pub mod OrderBook {
         pub amount: u256,
         apy: u256,
         isSold: bool,
+        buyer: ContractAddress,
         // price: u256,// duration: u256,
     }
 
@@ -77,6 +79,7 @@ pub mod OrderBook {
                 amount: amount,
                 apy: apy,
                 isSold: false,
+                buyer: Zero::zero(),
             };
 
             self.order_list.entry(self.next_order_id.read()).write(UserOrder);
@@ -96,6 +99,7 @@ pub mod OrderBook {
                 amount: order.amount,
                 apy: order.apy,
                 isSold: true,
+                buyer: get_caller_address(),
             };
 
             self.order_list.entry(order_id).write(current_order);
@@ -115,6 +119,7 @@ pub mod OrderBook {
                 amount: order.amount,
                 apy: order.apy,
                 isSold: true,
+                buyer: get_caller_address(),
             };
 
             self.order_list.entry(last_order).write(current_order);
