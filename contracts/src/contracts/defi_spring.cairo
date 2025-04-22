@@ -28,7 +28,7 @@ pub mod DefiSpring {
     #[storage]
     struct Storage {
         decimals: u8,
-        indexRate: u256,
+        apr: u256,
         #[substorage(v0)]
         erc20: ERC20Component::Storage,
         #[substorage(v0)]
@@ -56,7 +56,7 @@ pub mod DefiSpring {
     #[constructor]
     fn constructor(ref self: ContractState, name: ByteArray, symbol: ByteArray) {
         self.erc20.initializer(name, symbol);
-        self.indexRate.write(1000) //10% bps
+        self.apr.write(1000) //10% bps
     }
 
     #[abi(embed_v0)]
@@ -68,15 +68,15 @@ pub mod DefiSpring {
         }
 
         fn get_apr(self: @ContractState) -> u256 {
-            self.indexRate.read()
+            self.apr.read()
         }
 
-        fn update_apr(ref self: ContractState, newIndex: u256) {
-            self.indexRate.write(newIndex);
+        fn update_apr(ref self: ContractState, new_apr: u256) {
+            self.apr.write(new_apr);
         }
 
-        fn set_apr(ref self: ContractState, newIndex: u256) {
-            self.indexRate.write(newIndex);
+        fn set_apr(ref self: ContractState, new_apr: u256) {
+            self.apr.write(new_apr);
         }
 
 
