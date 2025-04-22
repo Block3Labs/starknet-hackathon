@@ -135,7 +135,26 @@ pub mod Router {
             self.order_book_addr.write(order_book_address);
         }
         // A la fin de la maturité
-    // fn swap_pt_for_underlying()
+        fn swap_pt_for_underlying(
+            ref self: ContractState,
+            market_address: ContractAddress,
+            pt_address: ContractAddress,
+            amount: u256,
+        ) {
+            assert(amount != 0, Errors::INVALID_SWAP_AMOUNT);
+            let caller = get_caller_address();
+            let market = IMarketDispatcher { contract_address: market_address };
+            let maturity = market.maturity_timestamp();
+            assert(get_block_timestamp() > maturity, Errors::INVALID_MATURITY);
+            let pt_token = IERC20Dispatcher { contract_address: pt_address };
+            assert(pt_token.balance_of(caller) > 0, Errors::INVALID_BALANCE);
+
+            let claimable_amount = market.claim_underlying(caller, amount);
+            let underlying_token = IERC20Dispatcher {
+                contract_address: market.underlying_asset_address(),
+            };
+            underlying_token.transfer_from(market_address, caller, claimable_amount);
+        }
     }
 
     #[abi(embed_v0)]

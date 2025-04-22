@@ -232,13 +232,20 @@ pub mod Market {
         }
 
         // Redeem PT
-        fn claim_underlying(ref self: ContractState) {
+        fn claim_underlying(ref self: ContractState, user: ContractAddress, amount: u256) -> u256 {
             assert(self.is_mature(), Errors::NOT_MATURED);
-            //check pt balance
-        //check cb d'underlying asset ont doit lui donner / normalement 1:1 underlying::pt
-        //burn pt (call pt_contract)
-        //return pt to redeem
-        //==> routeur transfer underlying assets to caller  swap_pt_for_underlying()
+
+            assert(self.is_mature(), Errors::NOT_MATURED);
+            let router_addr = get_caller_address();
+
+            //check cb d'underlying asset ont doit lui donner / normalement 1:1 underlying::pt
+            let pt_token = IERC20Dispatcher { contract_address: self.pt_token.read() };
+            let amount_to_redeem = pt_token.balance_of(user);
+            assert(pt_token.balance_of(user) < amount, 'INVALID AMOUNT');
+            self.burn_pt(user, amount);
+
+            return amount_to_redeem;
+            //==> routeur transfer underlying assets to caller  swap_pt_for_underlying()
 
         }
     }
@@ -276,6 +283,8 @@ pub mod Market {
             IYieldTokenDispatcher { contract_address: self.yt_token.read() }
                 .burn(contract_address, recipient, amount, liqudity_index);
         }
+
+        fn burn_pt(ref self: ContractState, recipient: ContractAddress, amount: u256) {}
 
         fn transfer_yt(
             ref self: ContractState, buyer: ContractAddress, amount: u256,

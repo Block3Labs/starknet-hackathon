@@ -17,5 +17,5 @@ pub trait IMarket<TContractState> {
     fn buy_yield(
         ref self: TContractState, buyer: ContractAddress, seller: ContractAddress, amount: u256,
     );
-    fn claim_underlying(ref self: TContractState);
+    fn claim_underlying(ref self: TContractState, user: ContractAddress, amount: u256) -> u256;
 }
