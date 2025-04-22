@@ -75,11 +75,6 @@ pub mod DefiSpring {
             self.apr.write(new_apr);
         }
 
-        fn set_apr(ref self: ContractState, new_apr: u256) {
-            self.apr.write(new_apr);
-        }
-
-
         fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
             self.ownable.assert_only_owner();
             self.upgradeable.upgrade(new_class_hash);
