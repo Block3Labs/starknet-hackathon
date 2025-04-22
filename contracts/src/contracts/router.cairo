@@ -52,7 +52,7 @@ pub mod Router {
     mod Errors {
         pub const INVALID_BALANCE: felt252 = 'Invalid market balance';
         pub const INVALID_SWAP_AMOUNT: felt252 = 'Amount must be greater than 0';
-        pub const INVALID_MATURITY: felt252 = 'Maturity Not reached';
+        pub const INSUFFICIENT_BALANCE: felt252 = 'Insufficient balance';
     }
 
     #[constructor]
@@ -71,6 +71,8 @@ pub mod Router {
             let underlying_token = IERC20Dispatcher {
                 contract_address: market.underlying_asset_address(),
             };
+            assert(underlying_token.balance_of(caller) >= amount, Errors::INSUFFICIENT_BALANCE);
+
             let previous_balance = underlying_token.balance_of(market_address);
             underlying_token.transfer_from(caller, market_address, amount);
             assert(
@@ -80,17 +82,30 @@ pub mod Router {
 
             market.deposit(caller, amount);
 
-            // create_order()
-            let order_book = IOrderBookDispatcher { contract_address: self.order_book_addr.read() };
-            order_book.create_order(amount, caller);
+            let orderbook = IOrderBookDispatcher { contract_address: market.orderbook_address() };
+            orderbook.create_order(amount, caller);
 
             self.emit(Deposit { user: caller, amount, pt_received: amount, yt_locked: amount });
         }
 
         // si quelqu'un buy les yt
         fn swap_underlying_for_yt(
-            ref self: ContractState, market_address: ContractAddress, amount: u256,
-        ) { // fulfill_order
+            ref self: ContractState, market_address: ContractAddress, order_id: u256,
+        ) {
+            let caller = get_caller_address();
+            let market = IMarketDispatcher { contract_address: market_address };
+            let orderbook = IOrderBookDispatcher { contract_address: market.orderbook_address() };
+            let underlying_token = IERC20Dispatcher {
+                contract_address: market.underlying_asset_address(),
+            };
+
+            let order = orderbook.get_order(order_id);
+            assert(
+                underlying_token.balance_of(caller) >= order.amount, Errors::INSUFFICIENT_BALANCE,
+            );
+
+            market.buy_yield(caller, order.seller, order.amount);
+            // fulfill_order()
         }
 
         // A la fin de la maturité
@@ -118,6 +133,8 @@ pub mod Router {
         fn set_order_book_addr(ref self: ContractState, order_book_address: ContractAddress) {
             self.order_book_addr.write(order_book_address);
         }
+        // A la fin de la maturité
+    // fn swap_pt_for_underlying()
     }
 
     #[abi(embed_v0)]
