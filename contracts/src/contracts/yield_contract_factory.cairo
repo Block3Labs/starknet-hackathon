@@ -36,7 +36,7 @@ pub mod YieldFactoryContract {
     #[event]
     #[derive(Drop, starknet::Event)]
     pub enum Event {
-        NewPrincipalTokanDeployed: NewPrincipalTokanDeployed,
+        NewPrincipalTokenDeployed: NewPrincipalTokenDeployed,
         NewYieldTokenDeployed: NewYieldTokenDeployed,
         #[flat]
         UpgradeableEvent: UpgradeableComponent::Event,
@@ -45,7 +45,7 @@ pub mod YieldFactoryContract {
     }
 
     #[derive(Drop, starknet::Event)]
-    pub struct NewPrincipalTokanDeployed {
+    pub struct NewPrincipalTokenDeployed {
         #[key]
         pub id: u256,
         pub principal_token_address: ContractAddress,
@@ -120,8 +120,8 @@ pub mod YieldFactoryContract {
             self.pt_ids.entry(deployed_token_address).write(self.next_pt_id.read());
             self
                 .emit(
-                    Event::NewPrincipalTokanDeployed(
-                        NewPrincipalTokanDeployed {
+                    Event::NewPrincipalTokenDeployed(
+                        NewPrincipalTokenDeployed {
                             id: self.next_pt_id.read(),
                             principal_token_address: deployed_token_address,
                         },
