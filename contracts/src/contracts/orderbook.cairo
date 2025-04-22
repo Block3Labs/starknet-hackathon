@@ -26,6 +26,8 @@ pub mod OrderBook {
     #[derive(Copy, Drop, starknet::Event)]
     pub enum Event {
         OrderListed: OrderListed,
+        BuyOrder: BuyOrder,
+        OrderFullFill: OrderFullFill,
     }
 
     #[derive(Copy, Drop, starknet::Event)]
@@ -41,6 +43,12 @@ pub mod OrderBook {
         buyer: ContractAddress,
     }
 
+    #[derive(Copy, Drop, starknet::Event)]
+    pub struct OrderFullFill {
+        #[key]
+        order_id: u256,
+        buyer: ContractAddress,
+    }
 
     #[derive(Copy, Drop, Serde, Hash, starknet::Store)]
     pub struct Order {
@@ -84,6 +92,8 @@ pub mod OrderBook {
 
             self.order_list.entry(self.next_order_id.read()).write(UserOrder);
             self.user_orders.entry((caller, self.next_order_id.read())).write(UserOrder);
+
+            self.emit(OrderListed { order_id: self.next_order_id.read(), sender: caller });
             self.next_order_id.write(self.next_order_id.read() + 1);
         }
 
@@ -103,6 +113,12 @@ pub mod OrderBook {
             };
 
             self.order_list.entry(order_id).write(current_order);
+            self
+                .emit(
+                    OrderFullFill {
+                        order_id: self.next_order_id.read(), buyer: get_caller_address(),
+                    },
+                );
         }
 
         //fonction buy order au market (càd last order id)
@@ -123,6 +139,10 @@ pub mod OrderBook {
             };
 
             self.order_list.entry(last_order).write(current_order);
+            self
+                .emit(
+                    BuyOrder { order_id: self.next_order_id.read(), buyer: get_caller_address() },
+                );
         }
 
         fn get_order(self: @ContractState, order_id: u256) -> Order {
