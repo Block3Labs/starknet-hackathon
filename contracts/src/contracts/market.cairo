@@ -206,27 +206,26 @@ pub mod Market {
         }
 
         // Redeem YT
-        fn claim_yield(ref self: ContractState) -> u256 {
+        fn claim_yield(ref self: ContractState, user: ContractAddress) -> u256 {
             assert(self.is_mature(), Errors::NOT_MATURED);
-            let caller = get_caller_address();
+            let router_addr = get_caller_address();
 
             //check yt balance & check cb d'underlying asset ont doit lui donner
             let yt_token = IERC20Dispatcher {
                 contract_address: self.yt_token.read(),
             }; //==> scaled_balance real YT-Token value with interest - claimable value at maturity
-            let amount_to_redeem = yt_token.balance_of(caller);
+            let amount_to_redeem = yt_token.balance_of(user);
 
-            assert(yt_token.balance_of(caller) > 0, 'Wrong balance');
+            assert(yt_token.balance_of(user) > 0, 'Wrong balance');
 
-            //CheckRedeemAmount = (scaledBal * TVL_at_maturity) / scaled_total_supply;  <== sanity
-            //check , À Confirmer ou verifié
-            self.preview_redeem_yt(caller);
+            //CheckRedeemAmount = (scaledBal * TVL_at_maturity) / scaled_total_supply;<==
+            //sanitycheck, À Confirmer ou verifié
+            self.preview_redeem_yt(user);
 
-            //burn yt
-            //TO DO : override burn function
-            //yt_token.burn(yt_token.balance_of(caller));
+            self.burn_yt(user, yt_token.balance_of(user));
 
-            // underlying_assets.approve.(market_addr,amount_to_redeem)
+            IERC20Dispatcher { contract_address: self.underlying_asset.read() }
+                .approve(router_addr, amount_to_redeem);
 
             amount_to_redeem
             //==> routeur transfer assets to caller
@@ -269,6 +268,13 @@ pub mod Market {
             let liqudity_index = self.liquidity_index.read();
             IYieldTokenDispatcher { contract_address: self.yt_token.read() }
                 .mint(contract_address, recipient, amount, liqudity_index);
+        }
+
+        fn burn_yt(ref self: ContractState, recipient: ContractAddress, amount: u256) {
+            let contract_address = get_contract_address();
+            let liqudity_index = self.liquidity_index.read();
+            IYieldTokenDispatcher { contract_address: self.yt_token.read() }
+                .burn(contract_address, recipient, amount, liqudity_index);
         }
 
         fn transfer_yt(

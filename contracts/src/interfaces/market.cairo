@@ -13,7 +13,7 @@ pub trait IMarket<TContractState> {
 
     fn update_liquidity_index(ref self: TContractState, apr: u256);
     fn deposit(ref self: TContractState, caller: ContractAddress, amount: u256);
-    fn claim_yield(ref self: TContractState) -> u256;
+    fn claim_yield(ref self: TContractState, user: ContractAddress) -> u256;
     fn buy_yield(
         ref self: TContractState, buyer: ContractAddress, seller: ContractAddress, amount: u256,
     );

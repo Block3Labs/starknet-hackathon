@@ -53,6 +53,7 @@ pub mod Router {
         pub const INVALID_BALANCE: felt252 = 'Invalid market balance';
         pub const INVALID_SWAP_AMOUNT: felt252 = 'Amount must be greater than 0';
         pub const INSUFFICIENT_BALANCE: felt252 = 'Insufficient balance';
+        pub const INVALID_MATURITY: felt252 = 'Market not matured yet';
     }
 
     #[constructor]
@@ -123,7 +124,7 @@ pub mod Router {
             assert(get_block_timestamp() > maturity, Errors::INVALID_MATURITY);
             let yt_token = IERC20Dispatcher { contract_address: yt_address };
             assert(yt_token.balance_of(caller) > 0, Errors::INVALID_BALANCE);
-            let claimable_amount = market.claim_yield();
+            let claimable_amount = market.claim_yield(caller);
             let underlying_token = IERC20Dispatcher {
                 contract_address: market.underlying_asset_address(),
             };
