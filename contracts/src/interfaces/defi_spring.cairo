@@ -11,6 +11,6 @@ pub trait IDefiSpring<TComponentState> {
     fn upgrade(ref self: TComponentState, new_class_hash: ClassHash);
     fn claim(ref self: TComponentState, address: ContractAddress);
     fn get_apr(self: @TComponentState) -> u256;
-    fn set_apr(ref self: TComponentState, newIndex: u256);
-    fn update_apr(ref self: TComponentState, newIndex: u256);
+    fn set_apr(ref self: TComponentState, new_apr: u256);
+    fn update_apr(ref self: TComponentState, new_apr: u256);
 }
