@@ -3,6 +3,7 @@ import BuyLeft from './components/BuyLeft'
 import ChartSection from './components/ChartSection'
 import OrderBook from './components/OrderBook'
 import Header from './components/Header'
+import ContractPanel from './components/ContractPanel'
 
 export default function App() {
   return (

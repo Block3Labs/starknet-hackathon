@@ -10,7 +10,7 @@ export function useUnderlyingAssetAddress(marketAddress: string) {
 }
 
 export function useMaturityTimestamp(marketAddress: string) {
-  return useContractRead({
+  return useContract({
     functionName: 'maturity_timestamp',
     contractAddress: marketAddress,
     args: [],
@@ -19,7 +19,7 @@ export function useMaturityTimestamp(marketAddress: string) {
 }
 
 export function usePreviewRedeemYT(marketAddress: string, userAddress: string) {
-  return useContractRead({
+  return useContract({
     functionName: 'preview_redeem_yt',
     contractAddress: marketAddress,
     args: [userAddress],
@@ -28,7 +28,7 @@ export function usePreviewRedeemYT(marketAddress: string, userAddress: string) {
 }
 
 export function usePreviewYield(marketAddress: string, userAddress: string, futureTime: string) {
-  return useContractRead({
+  return useContract({
     functionName: 'preview_yield',
     contractAddress: marketAddress,
     args: [userAddress, futureTime],
@@ -37,7 +37,7 @@ export function usePreviewYield(marketAddress: string, userAddress: string, futu
 }
 
 export function useTotalAssets(marketAddress: string) {
-  return useContractRead({
+  return useContract({
     functionName: 'total_assets',
     contractAddress: marketAddress,
     args: [],
