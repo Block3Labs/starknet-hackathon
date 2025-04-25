@@ -8,7 +8,7 @@ export default function BuyLeft() {
   const { swap: swapPT } = useSwapUnderlyingForPT()
   const { swap: swapYT } = useSwapYTForUnderlying()
 
-  const marketAddress = '0xMARKET_ADDRESS_HERE' // À remplacer dynamiquement plus tard
+  const marketAddress = '0xMARKET_ADDRESS_HERE'
 
   const handleSubmit = async () => {
     const amountStr = (amount * 1e18).toString()
@@ -31,7 +31,6 @@ export default function BuyLeft() {
 
   return (
     <div className="space-y-6 text-white">
-      {/* Toggle */}
       <div className="flex gap-2">
         <button
           onClick={() => setAction('BUY')}
@@ -54,8 +53,6 @@ export default function BuyLeft() {
           CREATE
         </button>
       </div>
-
-      {/* Input */}
       <div>
         <label className="text-sm text-gray-400 mb-1 block">Amount</label>
         <input
@@ -66,16 +63,12 @@ export default function BuyLeft() {
           className="w-full px-4 py-2 rounded bg-[#1f2937] text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
-
-      {/* Action button */}
       <button
         onClick={handleSubmit}
         className="w-full py-2 bg-green-600 hover:bg-green-700 rounded font-semibold text-white transition"
       >
         {action}
       </button>
-
-      {/* Receive */}
       <p className="text-sm text-gray-400">
         Receive: <span className="text-indigo-400 font-mono">{receiveAmount} YT</span>
       </p>
