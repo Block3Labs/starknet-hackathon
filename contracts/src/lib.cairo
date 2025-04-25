@@ -1,6 +1,7 @@
 pub mod contracts {
     pub mod defi_spring;
     pub mod market;
+    pub mod orderbook;
     pub mod router;
     pub mod yield_contract_factory;
 }
@@ -17,6 +18,7 @@ pub mod tokens {
 pub mod interfaces {
     pub mod defi_spring;
     pub mod market;
+    pub mod orderbook;
     pub mod principal_token;
     pub mod router;
     pub mod scaled_balance_token;

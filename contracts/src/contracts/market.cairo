@@ -2,8 +2,10 @@
 pub mod Market {
     use core::num::traits::Zero;
     use openzeppelin_access::ownable::OwnableComponent;
+    use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use openzeppelin_upgrades::UpgradeableComponent;
     use openzeppelin_upgrades::interface::IUpgradeable;
+
     use starknet::storage::{
         Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
     };
@@ -32,6 +34,7 @@ pub mod Market {
     pub struct Storage {
         market_name: ByteArray,
         underlying_asset: ContractAddress,
+        orderbook_address: ContractAddress,
         pt_token: ContractAddress,
         yt_token: ContractAddress,
         maturity_timestamp: u64,
@@ -129,6 +132,10 @@ pub mod Market {
             self.underlying_asset.read()
         }
 
+        fn orderbook_address(self: @ContractState) -> ContractAddress {
+            self.orderbook_address.read()
+        }
+
         fn maturity_timestamp(self: @ContractState) -> u64 {
             self.maturity_timestamp.read()
         }
@@ -193,13 +200,54 @@ pub mod Market {
             self.mint_yt(caller, amount);
         }
 
+        fn buy_yield(
+            ref self: ContractState, buyer: ContractAddress, seller: ContractAddress, amount: u256,
+        ) { // transfer_yt()
+        }
+
         // Redeem YT
-        fn claim_yield(ref self: ContractState) {
+        fn claim_yield(ref self: ContractState, user: ContractAddress) -> u256 {
             assert(self.is_mature(), Errors::NOT_MATURED);
+            let router_addr = get_caller_address();
+
+            //check yt balance & check cb d'underlying asset ont doit lui donner
+            let yt_token = IERC20Dispatcher {
+                contract_address: self.yt_token.read(),
+            }; //==> scaled_balance real YT-Token value with interest - claimable value at maturity
+            let amount_to_redeem = yt_token.balance_of(user);
+
+            assert(yt_token.balance_of(user) > 0, 'Wrong balance');
+
+            //CheckRedeemAmount = (scaledBal * TVL_at_maturity) / scaled_total_supply;<==
+            //sanitycheck, À Confirmer ou verifié
+            self.preview_redeem_yt(user);
+
+            self.burn_yt(user, yt_token.balance_of(user));
+
+            IERC20Dispatcher { contract_address: self.underlying_asset.read() }
+                .approve(router_addr, amount_to_redeem);
+
+            amount_to_redeem
+            //==> routeur transfer assets to caller
         }
 
         // Redeem PT
-        fn claim_underlying(ref self: ContractState) {}
+        fn claim_underlying(ref self: ContractState, user: ContractAddress, amount: u256) -> u256 {
+            assert(self.is_mature(), Errors::NOT_MATURED);
+
+            assert(self.is_mature(), Errors::NOT_MATURED);
+            let router_addr = get_caller_address();
+
+            //check cb d'underlying asset ont doit lui donner / normalement 1:1 underlying::pt
+            let pt_token = IERC20Dispatcher { contract_address: self.pt_token.read() };
+            let amount_to_redeem = pt_token.balance_of(user);
+            assert(pt_token.balance_of(user) < amount, 'INVALID AMOUNT');
+            self.burn_pt(user, amount);
+
+            return amount_to_redeem;
+            //==> routeur transfer underlying assets to caller  swap_pt_for_underlying()
+
+        }
     }
 
     #[abi(embed_v0)]
@@ -227,6 +275,20 @@ pub mod Market {
             let liqudity_index = self.liquidity_index.read();
             IYieldTokenDispatcher { contract_address: self.yt_token.read() }
                 .mint(contract_address, recipient, amount, liqudity_index);
+        }
+
+        fn burn_yt(ref self: ContractState, recipient: ContractAddress, amount: u256) {
+            let contract_address = get_contract_address();
+            let liqudity_index = self.liquidity_index.read();
+            IYieldTokenDispatcher { contract_address: self.yt_token.read() }
+                .burn(contract_address, recipient, amount, liqudity_index);
+        }
+
+        fn burn_pt(ref self: ContractState, recipient: ContractAddress, amount: u256) {}
+
+        fn transfer_yt(
+            ref self: ContractState, buyer: ContractAddress, amount: u256,
+        ) { // Send YT from Market to buyer
         }
 
         fn redeem_yt(ref self: ContractState, amount: u256) {}
