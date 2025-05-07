@@ -10,7 +10,6 @@ pub mod DefiSpring {
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
     use starknet::{ClassHash, ContractAddress};
 
-
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
     component!(path: UpgradeableComponent, storage: upgradeable, event: UpgradeableEvent);
@@ -23,7 +22,6 @@ pub mod DefiSpring {
     #[abi(embed_v0)]
     impl SRC5Impl = SRC5Component::SRC5Impl<ContractState>;
     impl SRC5InternalImpl = SRC5Component::InternalImpl<ContractState>;
-
 
     #[storage]
     struct Storage {
@@ -38,7 +36,6 @@ pub mod DefiSpring {
         #[substorage(v0)]
         ownable: OwnableComponent::Storage,
     }
-
 
     #[event]
     #[derive(Drop, starknet::Event)]
