@@ -20,8 +20,8 @@ export default function ContractPanel() {
   const { redeem: redeemPT } = useRedeemPT()
   const { redeem: redeemYT } = useRedeemYT()
 
-  const { call: preview } = usePreviewRedeemYT(marketAddress, address || '')
-  const { call: tvl } = useTotalAssets(marketAddress)
+  const { result: preview } = usePreviewRedeemYT(marketAddress, address || '')
+  const { result: tvl } = useTotalAssets(marketAddress)
 
   const execute = async (fn: () => Promise<any>) => {
     try {

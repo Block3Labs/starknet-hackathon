@@ -28,7 +28,7 @@ export default function ConnectWallet() {
       {/* Button */}
       <button
         onClick={() => setIsModalOpen(true)}
-        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm font-semibold transition"
+        className="bg-[#ff9776] hover:bg-[#ff8561] text-white px-6 py-2.5 rounded-xl text-sm font-medium transition-all"
       >
         Connect Wallet
       </button>
@@ -41,7 +41,7 @@ export default function ConnectWallet() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-2 w-64 bg-[#1f2937] border border-gray-700 rounded shadow-lg z-50"
+            className="absolute right-0 mt-2 w-64 bg-[#1f2937] border border-gray-700 rounded-xl shadow-lg z-50"
           >
             <div className="p-4 border-b border-gray-600 flex justify-between items-center">
               <span className="text-sm font-semibold text-white">Select Wallet</span>
@@ -60,7 +60,7 @@ export default function ConnectWallet() {
                     connect({ connector })
                     setIsModalOpen(false)
                   }}
-                  className="w-full text-left px-4 py-2 bg-[#111827] hover:bg-[#1c1f2b] border border-gray-700 rounded text-sm text-gray-300 transition"
+                  className="w-full text-left px-4 py-2.5 bg-[#111827] hover:bg-[#1c1f2b] border border-gray-700 rounded-xl text-sm text-gray-300 transition-all"
                 >
                   {connector.name}
                 </button>

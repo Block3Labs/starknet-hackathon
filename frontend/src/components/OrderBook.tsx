@@ -1,67 +1,76 @@
 export default function OrderBook() {
-    const orderbook = {
-      currentPrice: '3%',
-      asks: [
-        { strk: 100, yt: 10, rate: '3.5%' },
-        { strk: 80, yt: 8, rate: '3.4%' },
-        { strk: 50, yt: 5, rate: '3.2%' },
-      ],
-      bids: [
-        { strk: 100, yt: 2, rate: '1.2%' },
-        { strk: 75, yt: 1.5, rate: '1.0%' },
-        { strk: 60, yt: 1, rate: '0.9%' },
-      ],
-      history: [
-        'Executed 10 YT @ 3%',
-        'Executed 2 YT @ 1.2%',
-        'Created 25 YT pool',
-      ],
-    }
-  
-    return (
-      <div className="text-white space-y-6">
+  const orderbook = {
+    asks: [
+      { yt: '30 YT', amount: '108 YT', rate: '3%' },
+      { yt: '22 YT', amount: '25 YT', rate: '3%' },
+      { yt: '16 YT', amount: '106 YT', rate: '3%' },
+    ],
+    bids: [
+      { yt: '149 YT', amount: '104 YT', rate: '3%' },
+      { yt: '7 YT', amount: '7 YT', rate: '1%' },
+      { yt: '58 YT', amount: '102 YT', rate: '1%' },
+    ],
+    history: [
+      'Executed 128 YT @ 109 STRK',
+      'Executed 27 YT @ 104 STRK',
+      'Cancelled 53 YT pool',
+    ],
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-white">Order Book</h2>
+      </div>
+
+      <div className="space-y-4">
         <div>
-          <h2 className="text-xl font-semibold">Order Book</h2>
-          <p className="text-sm text-gray-400">
-            Current: <span className="font-mono">{orderbook.currentPrice}</span>
-          </p>
-        </div>
-  
-        <div>
-          <h3 className="text-sm text-green-400 font-semibold mb-1">Asks (Sell YT)</h3>
-          <ul className="space-y-1 text-sm font-mono text-green-300">
+          <h3 className="text-sm font-medium text-[#40c9a2] mb-2">
+            Asks (Sell YT)
+          </h3>
+          <div className="space-y-2">
             {orderbook.asks.map((ask, i) => (
-              <li key={i} className="flex justify-between border-b border-green-800/30 pb-1">
-                <span>{ask.strk} STRK</span>
-                <span>{ask.yt} YT</span>
-                <span>{ask.rate}</span>
-              </li>
+              <div
+                key={i}
+                className="flex items-center justify-between text-sm"
+              >
+                <span className="text-[#ff9776]">{ask.yt}</span>
+                <span className="text-white">{ask.amount}</span>
+                <span className="text-[#40c9a2]">{ask.rate}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
-  
+
         <div>
-          <h3 className="text-sm text-red-400 font-semibold mb-1">Bids (Buy YT)</h3>
-          <ul className="space-y-1 text-sm font-mono text-red-300">
+          <h3 className="text-sm font-medium text-[#ff9776] mb-2">
+            Bids (Buy YT)
+          </h3>
+          <div className="space-y-2">
             {orderbook.bids.map((bid, i) => (
-              <li key={i} className="flex justify-between border-b border-red-800/30 pb-1">
-                <span>{bid.strk} STRK</span>
-                <span>{bid.yt} YT</span>
-                <span>{bid.rate}</span>
-              </li>
+              <div
+                key={i}
+                className="flex items-center justify-between text-sm"
+              >
+                <span className="text-[#40c9a2]">{bid.yt}</span>
+                <span className="text-white">{bid.amount}</span>
+                <span className="text-[#ff9776]">{bid.rate}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
-  
-        <div>
-          <h3 className="text-sm text-gray-300 font-semibold mb-1">History</h3>
-          <ul className="space-y-1 text-sm text-gray-400 font-mono">
-            {orderbook.history.map((item, index) => (
-              <li key={index} className="border-b border-gray-700 pb-1">{item}</li>
+
+        <div className="border-t border-gray-700/50 pt-4 mt-4">
+          <h3 className="text-sm font-medium text-gray-400 mb-2">History</h3>
+          <div className="space-y-2">
+            {orderbook.history.map((item, i) => (
+              <div key={i} className="text-sm text-gray-300">
+                {item}
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       </div>
-    )
-  }
-  
+    </div>
+  )
+}

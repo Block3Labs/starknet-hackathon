@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import {
   LineChart,
   Line,
@@ -8,71 +8,106 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts'
+import { usePrice } from '../context/PriceContext'
 
 export default function ChartSection() {
-  const [orders, setOrders] = useState<string[]>([])
-
-  useEffect(() => {
-    setOrders([
-      'Order #128 — 10 YT pending',
-      'Order #129 — 25 YT pending',
-      'Order #130 — 5 YT pending',
-    ])
-  }, [])
-
+  const { setCurrentPrice } = usePrice()
+  
   const data = [
-    { time: '10:00', price: 3.2 },
-    { time: '10:15', price: 3.4 },
-    { time: '10:30', price: 3.1 },
-    { time: '10:45', price: 3.3 },
-    { time: '11:00', price: 3.5 },
-    { time: '11:15', price: 3.7 },
+    { time: '10:00', value: 100000 },
+    { time: '10:00', value: 100000 },
+    { time: '11:00', value: 99000 },
+    { time: '12:00', value: 100500 },
+    { time: '13:00', value: 101000 },
+    { time: '14:00', value: 101500 },
+  ]
+
+  // Update current price whenever the last data point changes
+  useEffect(() => {
+    const lastPrice = data[data.length - 1].value
+    setCurrentPrice(lastPrice)
+  }, [data, setCurrentPrice])
+
+  const pendingOrders = [
+    'Order #128 - 10 YT pending',
+    'Order #127 - 25 YT pending',
+    'Order #126 - 5 YT pending',
   ]
 
   return (
-    <div className="space-y-8 text-white">
-      <div className="rounded-xl overflow-hidden border border-indigo-500/30 bg-gradient-to-br from-[#1f1f2b] to-[#2c2c40] shadow-lg p-4">
-        <div className="text-xs text-indigo-400 font-semibold uppercase tracking-wide mb-2">
-          Price Chart
+    <div className="space-y-6">
+      <div className="bg-[#111827] border border-gray-800 rounded-lg p-6 shadow-lg">
+        <div className="mb-4">
+          <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+            Price Chart
+          </h2>
         </div>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={data}>
-            <XAxis dataKey="time" stroke="#8884d8" fontSize={12} />
-            <YAxis stroke="#8884d8" fontSize={12} domain={['dataMin - 0.2', 'dataMax + 0.2']} />
-            <CartesianGrid stroke="#444" strokeDasharray="3 3" />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#1a1b2f',
-                border: 'none',
-                borderRadius: '6px',
-              }}
-              labelStyle={{ color: '#ccc' }}
-              itemStyle={{ color: '#fff' }}
-            />
-            <Line
-              type="monotone"
-              dataKey="price"
-              stroke="#6366f1"
-              strokeWidth={2}
-              dot={{ r: 3 }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        
+        <div className="h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data}>
+              <defs>
+                <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#40c9a2" stopOpacity={0.1}/>
+                  <stop offset="95%" stopColor="#40c9a2" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="rgba(255,255,255,0.1)"
+              />
+              <XAxis
+                dataKey="time"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#9ca3af', fontSize: 12 }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#9ca3af', fontSize: 12 }}
+                domain={['dataMin - 1000', 'dataMax + 1000']}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: '#1f2937',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                }}
+                itemStyle={{ color: '#40c9a2' }}
+                labelStyle={{ color: '#9ca3af' }}
+              />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="#40c9a2"
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, fill: '#40c9a2' }}
+                fillOpacity={1}
+                fill="url(#colorValue)"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
-      <div>
-        <h2 className="text-lg font-semibold text-gray-100 mb-3 tracking-wide">Pending Orders</h2>
-        <ul className="space-y-2 text-sm text-gray-300 font-mono">
-          {orders.map((order, index) => (
-            <li
+      <div className="bg-[#111827] border border-gray-800 rounded-lg p-6 shadow-lg">
+        <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
+          Pending Orders
+        </h2>
+        <div className="space-y-2">
+          {pendingOrders.map((order, index) => (
+            <div
               key={index}
-              className="px-4 py-2 border border-gray-700 rounded-lg bg-[#1a1b2f]/60 backdrop-blur-sm hover:bg-[#242540]/70 transition"
+              className="flex items-center px-4 py-3 bg-white/5 border border-gray-700/50 rounded-lg text-gray-300 text-sm"
             >
               {order}
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </div>
   )

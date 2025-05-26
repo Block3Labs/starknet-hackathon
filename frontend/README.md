@@ -1,46 +1,113 @@
-# Getting Started with Create React App
+# 🔷 Bonded Finance
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![Bonded Finance Banner](public/banner.png)
 
-## Available Scripts
+## 🏆 Re{ignite} Starknet Hackathon Project
 
-In the project directory, you can run:
+Bonded Finance is a fixed-yield protocol built on Starknet that enables users to create and trade yield tokens. Our platform introduces innovative financial instruments to the Starknet ecosystem, allowing users to lock in future yields and trade them in a decentralized manner.
 
-### `npm start`
+### 🎯 Problem Statement
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+In the current DeFi landscape, yield rates are highly volatile and unpredictable. Users seeking stable returns often struggle to find reliable solutions that guarantee fixed yields without sacrificing capital efficiency.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### 💡 Solution
 
-### `npm test`
+Bonded Finance introduces Principal Tokens (PT) and Yield Tokens (YT), allowing users to:
+- Lock in future yields today
+- Trade yield expectations
+- Create efficient fixed-rate lending and borrowing markets
+- Access immediate liquidity for future yield
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🛠 Technical Stack
 
-### `npm run build`
+- **Frontend**: React, TypeScript, TailwindCSS
+- **Smart Contracts**: Cairo 1.0
+- **Network**: Starknet
+- **Testing**: Scarb, Starknet-devnet
+- **Deployment**: Starknet Testnet (Sepolia)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🚀 Features
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- 📊 Real-time price charts and order books
+- 💱 Seamless swapping between underlying assets and PTs/YTs
+- 🔒 Secure wallet integration with Argent X and Braavos
+- 📈 Advanced yield trading mechanisms
+- 🎯 Intuitive user interface for both beginners and advanced traders
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🏃‍♂️ Quick Start
 
-### `npm run eject`
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/bonded-finance.git
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+# Install dependencies
+cd bonded-finance
+yarn install
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# Start the development server
+yarn start
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 🔧 Smart Contract Deployment
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Our contracts are deployed on Starknet Sepolia Testnet:
+- Market Contract: `0x...`
+- Router Contract: `0x...`
+- Factory Contract: `0x...`
 
-## Learn More
+## 🎮 Usage
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+1. **Connect Wallet**: Use Argent X or Braavos wallet
+2. **Create Order**: Lock in future yield by creating PT/YT pairs
+3. **Trade**: Swap between underlying assets and PTs/YTs
+4. **Monitor**: Track your positions and yields in real-time
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## 🏗 Architecture
+
+```
+bonded-finance/
+├── src/
+│   ├── components/     # React components
+│   ├── hooks/         # Custom hooks for contract interactions
+│   ├── context/       # React context providers
+│   └── abi/          # Contract ABIs
+├── contracts/        # Cairo smart contracts
+└── public/          # Static assets
+```
+
+## 🔬 Testing
+
+```bash
+# Run frontend tests
+yarn test
+
+# Run contract tests
+scarb test
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please check our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+## 👥 Team
+
+- **Hugo** - Full Stack Developer & Smart Contract Engineer
+- [Add other team members]
+
+## 🏆 Hackathon Achievements
+
+- 🥇 Participated in Re{ignite} by Starknet
+- [Add specific achievements/features completed during hackathon]
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Starknet Foundation for organizing Re{ignite}
+- [Other acknowledgments]
+
+---
+
+<p align="center">Built with ❤️ for the Starknet ecosystem</p>
