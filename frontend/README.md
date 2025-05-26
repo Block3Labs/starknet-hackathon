@@ -85,20 +85,6 @@ yarn test
 scarb test
 ```
 
-## 🤝 Contributing
-
-We welcome contributions! Please check our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-## 👥 Team
-
-- **Hugo** - Full Stack Developer & Smart Contract Engineer
-- [Add other team members]
-
-## 🏆 Hackathon Achievements
-
-- 🥇 Participated in Re{ignite} by Starknet
-- [Add specific achievements/features completed during hackathon]
-
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -106,7 +92,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - Starknet Foundation for organizing Re{ignite}
-- [Other acknowledgments]
 
 ---
 
