@@ -1,14 +1,13 @@
 #[starknet::contract]
-pub mod DefiSpring {
+pub mod PrincipalToken {
     use ERC20Component::InternalTrait;
     use openzeppelin::access::ownable::OwnableComponent;
-    use openzeppelin::access::ownable::ownable::OwnableComponent::InternalTrait as OwnableInternalTrait;
     use openzeppelin::introspection::src5::SRC5Component;
     use openzeppelin::token::erc20::{ERC20Component, ERC20HooksEmptyImpl};
     use openzeppelin::upgrades::upgradeable::UpgradeableComponent;
-    use openzeppelin::upgrades::upgradeable::UpgradeableComponent::InternalTrait as UpgradeableInternalTrait;
     use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
-    use starknet::{ClassHash, ContractAddress};
+    use starknet::{ContractAddress};
+    use starknet_hackathon::interfaces::market::{IMarketDispatcher, IMarketDispatcherTrait};
 
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
     component!(path: SRC5Component, storage: src5, event: SRC5Event);
@@ -25,8 +24,7 @@ pub mod DefiSpring {
 
     #[storage]
     struct Storage {
-        decimals: u8,
-        apr: u256,
+        market: IMarketDispatcher,
         #[substorage(v0)]
         erc20: ERC20Component::Storage,
         #[substorage(v0)]
@@ -53,28 +51,20 @@ pub mod DefiSpring {
     #[constructor]
     fn constructor(ref self: ContractState, name: ByteArray, symbol: ByteArray) {
         self.erc20.initializer(name, symbol);
-        self.apr.write(1000) //10% bps
     }
 
     #[abi(embed_v0)]
-    pub impl DefiSpringImpl of starknet_hackathon::interfaces::defi_spring::IDefiSpring<
+    pub impl PrincipalTokenImpl of starknet_hackathon::interfaces::principal_token::IPrincipalToken<
         ContractState,
     > {
-        fn claim(ref self: ContractState, address: ContractAddress) {
-            self.erc20.mint(address, 10);
+        fn underlying_asset_address(self: @ContractState) -> ContractAddress {
+            IMarketDispatcher { contract_address: self.market.read().contract_address }
+                .underlying_asset_address()
         }
 
-        fn get_apr(self: @ContractState) -> u256 {
-            self.apr.read()
-        }
 
-        fn update_apr(ref self: ContractState, new_apr: u256) {
-            self.apr.write(new_apr);
-        }
-
-        fn upgrade(ref self: ContractState, new_class_hash: ClassHash) {
-            self.ownable.assert_only_owner();
-            self.upgradeable.upgrade(new_class_hash);
+        fn set_market_address(ref self: ContractState, market_address: ContractAddress) {
+            self.market.write(IMarketDispatcher { contract_address: market_address });
         }
     }
 }

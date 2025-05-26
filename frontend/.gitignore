@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# dotenv environment variables
+.env
+.env.*.local
+
+# build output
+dist/
+build/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# editor directories and files
+.vscode/
+.idea/
+.DS_Store
+
+# OS-specific
+Thumbs.db
+
+# testing
+coverage/
+
+# lockfiles (optionnel selon team)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
