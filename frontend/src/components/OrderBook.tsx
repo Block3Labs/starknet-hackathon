@@ -1,21 +1,84 @@
+import { useOrders } from '../context/OrderContext'
+import { useEffect, useState } from 'react'
+
+interface OrderBookEntry {
+  amount: string
+  yt: string
+  rate: string
+}
+
+interface HistoryEntry {
+  id: number
+  message: string
+  status: 'pending' | 'completed' | 'failed'
+}
+
 export default function OrderBook() {
-  const orderbook = {
-    asks: [
-      { yt: '30 YT', amount: '108 YT', rate: '3%' },
-      { yt: '22 YT', amount: '25 YT', rate: '3%' },
-      { yt: '16 YT', amount: '106 YT', rate: '3%' },
-    ],
-    bids: [
-      { yt: '149 YT', amount: '104 YT', rate: '3%' },
-      { yt: '7 YT', amount: '7 YT', rate: '1%' },
-      { yt: '58 YT', amount: '102 YT', rate: '1%' },
-    ],
-    history: [
-      'Executed 128 YT @ 109 STRK',
-      'Executed 27 YT @ 104 STRK',
-      'Cancelled 53 YT pool',
-    ],
-  }
+  const { pendingOrders } = useOrders()
+  const [asks, setAsks] = useState<OrderBookEntry[]>([
+    { amount: '30 STRK', yt: '108 YT', rate: '9.8%' },
+    { amount: '22 STRK', yt: '25 YT', rate: '9.2%' },
+    { amount: '16 STRK', yt: '106 YT', rate: '8.7%' },
+  ])
+  const [bids, setBids] = useState<OrderBookEntry[]>([
+    { amount: '149 STRK', yt: '104 YT', rate: '7.2%' },
+    { amount: '7 STRK', yt: '7 YT', rate: '6.5%' },
+    { amount: '58 STRK', yt: '102 YT', rate: '5.3%' },
+  ])
+  const [history, setHistory] = useState<HistoryEntry[]>([
+    { id: 1, message: 'Executed 128 YT @ 109 STRK', status: 'completed' },
+    { id: 2, message: 'Executed 27 YT @ 104 STRK', status: 'completed' },
+    { id: 3, message: 'Cancelled 53 YT pool', status: 'failed' },
+  ])
+
+  useEffect(() => {
+    // Update history and order book based on pending orders
+    pendingOrders.forEach(order => {
+      const ytAmount = Math.floor(Number(order.amount) * 1.2)
+      const newEntry = {
+        amount: `${order.amount} STRK`,
+        yt: `${ytAmount} YT`,
+        rate: '3%'
+      }
+      
+      // Add to history if not already present
+      setHistory(prev => {
+        const existingEntry = prev.find(h => h.id === order.id)
+        if (!existingEntry) {
+          return [{
+            id: order.id,
+            message: `${order.type === 'BUY' ? 'Buying' : 'Creating'} ${ytAmount} YT @ ${order.amount} STRK`,
+            status: order.status
+          }, ...prev]
+        }
+        // Update status if entry exists
+        return prev.map(h => 
+          h.id === order.id 
+            ? { ...h, status: order.status }
+            : h
+        )
+      })
+
+      // Add completed orders to the order book
+      if (order.status === 'completed') {
+        if (order.type === 'BUY') {
+          setBids(prev => {
+            if (!prev.some(bid => bid.amount === newEntry.amount)) {
+              return [newEntry, ...prev]
+            }
+            return prev
+          })
+        } else {
+          setAsks(prev => {
+            if (!prev.some(ask => ask.amount === newEntry.amount)) {
+              return [newEntry, ...prev]
+            }
+            return prev
+          })
+        }
+      }
+    })
+  }, [pendingOrders])
 
   return (
     <div className="space-y-6">
@@ -29,13 +92,13 @@ export default function OrderBook() {
             Asks (Sell YT)
           </h3>
           <div className="space-y-2">
-            {orderbook.asks.map((ask, i) => (
+            {asks.map((ask, i) => (
               <div
                 key={i}
                 className="flex items-center justify-between text-sm"
               >
-                <span className="text-[#ff9776]">{ask.yt}</span>
-                <span className="text-white">{ask.amount}</span>
+                <span className="text-[#ff9776]">{ask.amount}</span>
+                <span className="text-white">{ask.yt}</span>
                 <span className="text-[#40c9a2]">{ask.rate}</span>
               </div>
             ))}
@@ -47,13 +110,13 @@ export default function OrderBook() {
             Bids (Buy YT)
           </h3>
           <div className="space-y-2">
-            {orderbook.bids.map((bid, i) => (
+            {bids.map((bid, i) => (
               <div
                 key={i}
                 className="flex items-center justify-between text-sm"
               >
-                <span className="text-[#40c9a2]">{bid.yt}</span>
-                <span className="text-white">{bid.amount}</span>
+                <span className="text-[#40c9a2]">{bid.amount}</span>
+                <span className="text-white">{bid.yt}</span>
                 <span className="text-[#ff9776]">{bid.rate}</span>
               </div>
             ))}
@@ -63,9 +126,17 @@ export default function OrderBook() {
         <div className="border-t border-gray-700/50 pt-4 mt-4">
           <h3 className="text-sm font-medium text-gray-400 mb-2">History</h3>
           <div className="space-y-2">
-            {orderbook.history.map((item, i) => (
-              <div key={i} className="text-sm text-gray-300">
-                {item}
+            {history.map((item) => (
+              <div 
+                key={item.id} 
+                className={`text-sm ${
+                  item.status === 'completed' ? 'text-[#40c9a2]' :
+                  item.status === 'failed' ? 'text-[#ff9776]' :
+                  'text-gray-300'
+                }`}
+              >
+                {item.message}
+                {item.status === 'pending' && ' (Pending...)'}
               </div>
             ))}
           </div>

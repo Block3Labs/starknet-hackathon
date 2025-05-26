@@ -4,8 +4,8 @@ import {
   useSwapYTForUnderlying,
   useRedeemPT,
   useRedeemYT,
-  usePreviewRedeemYT,
-  useTotalAssets,
+  // usePreviewRedeemYT,  // Temporarily disabled
+  // useTotalAssets,      // Temporarily disabled
 } from '../hooks'
 
 import { useAccount } from '@starknet-react/core'
@@ -20,8 +20,9 @@ export default function ContractPanel() {
   const { redeem: redeemPT } = useRedeemPT()
   const { redeem: redeemYT } = useRedeemYT()
 
-  const { result: preview } = usePreviewRedeemYT(marketAddress, address || '')
-  const { result: tvl } = useTotalAssets(marketAddress)
+  // Temporarily disabled hooks
+  // const { result: preview } = usePreviewRedeemYT(marketAddress, address || '')
+  // const { result: tvl } = useTotalAssets(marketAddress)
 
   const execute = async (fn: () => Promise<any>) => {
     try {
@@ -84,6 +85,7 @@ export default function ContractPanel() {
             Redeem YT
           </button>
         </div>
+        {/* Temporarily disabled preview and TVL display
         <div className="pt-4 border-t border-gray-700 text-sm text-gray-300 space-y-1">
           <div>
             Preview Redeem YT:{' '}
@@ -94,6 +96,7 @@ export default function ContractPanel() {
             <span className="font-mono text-green-400">{tvl && tvl[0]?.toString()}</span>
           </div>
         </div>
+        */}
       </div>
     </div>
   )
