@@ -1,67 +1,147 @@
+import { useOrders } from '../context/OrderContext'
+import { useEffect, useState } from 'react'
+
+interface OrderBookEntry {
+  amount: string
+  yt: string
+  rate: string
+}
+
+interface HistoryEntry {
+  id: number
+  message: string
+  status: 'pending' | 'completed' | 'failed'
+}
+
 export default function OrderBook() {
-    const orderbook = {
-      currentPrice: '3%',
-      asks: [
-        { strk: 100, yt: 10, rate: '3.5%' },
-        { strk: 80, yt: 8, rate: '3.4%' },
-        { strk: 50, yt: 5, rate: '3.2%' },
-      ],
-      bids: [
-        { strk: 100, yt: 2, rate: '1.2%' },
-        { strk: 75, yt: 1.5, rate: '1.0%' },
-        { strk: 60, yt: 1, rate: '0.9%' },
-      ],
-      history: [
-        'Executed 10 YT @ 3%',
-        'Executed 2 YT @ 1.2%',
-        'Created 25 YT pool',
-      ],
-    }
-  
-    return (
-      <div className="text-white space-y-6">
+  const { pendingOrders } = useOrders()
+  const [asks, setAsks] = useState<OrderBookEntry[]>([
+    { amount: '30 STRK', yt: '108 YT', rate: '9.8%' },
+    { amount: '22 STRK', yt: '25 YT', rate: '9.2%' },
+    { amount: '16 STRK', yt: '106 YT', rate: '8.7%' },
+  ])
+  const [bids, setBids] = useState<OrderBookEntry[]>([
+    { amount: '149 STRK', yt: '104 YT', rate: '7.2%' },
+    { amount: '7 STRK', yt: '7 YT', rate: '6.5%' },
+    { amount: '58 STRK', yt: '102 YT', rate: '5.3%' },
+  ])
+  const [history, setHistory] = useState<HistoryEntry[]>([
+    { id: 1, message: 'Executed 128 YT @ 109 STRK', status: 'completed' },
+    { id: 2, message: 'Executed 27 YT @ 104 STRK', status: 'completed' },
+    { id: 3, message: 'Cancelled 53 YT pool', status: 'failed' },
+  ])
+
+  useEffect(() => {
+    // Update history and order book based on pending orders
+    pendingOrders.forEach(order => {
+      const ytAmount = Math.floor(Number(order.amount) * 1.2)
+      const newEntry = {
+        amount: `${order.amount} STRK`,
+        yt: `${ytAmount} YT`,
+        rate: '3%'
+      }
+      
+      // Add to history if not already present
+      setHistory(prev => {
+        const existingEntry = prev.find(h => h.id === order.id)
+        if (!existingEntry) {
+          return [{
+            id: order.id,
+            message: `${order.type === 'BUY' ? 'Buying' : 'Creating'} ${ytAmount} YT @ ${order.amount} STRK`,
+            status: order.status
+          }, ...prev]
+        }
+        // Update status if entry exists
+        return prev.map(h => 
+          h.id === order.id 
+            ? { ...h, status: order.status }
+            : h
+        )
+      })
+
+      // Add completed orders to the order book
+      if (order.status === 'completed') {
+        if (order.type === 'BUY') {
+          setBids(prev => {
+            if (!prev.some(bid => bid.amount === newEntry.amount)) {
+              return [newEntry, ...prev]
+            }
+            return prev
+          })
+        } else {
+          setAsks(prev => {
+            if (!prev.some(ask => ask.amount === newEntry.amount)) {
+              return [newEntry, ...prev]
+            }
+            return prev
+          })
+        }
+      }
+    })
+  }, [pendingOrders])
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-white">Order Book</h2>
+      </div>
+
+      <div className="space-y-4">
         <div>
-          <h2 className="text-xl font-semibold">Order Book</h2>
-          <p className="text-sm text-gray-400">
-            Current: <span className="font-mono">{orderbook.currentPrice}</span>
-          </p>
-        </div>
-  
-        <div>
-          <h3 className="text-sm text-green-400 font-semibold mb-1">Asks (Sell YT)</h3>
-          <ul className="space-y-1 text-sm font-mono text-green-300">
-            {orderbook.asks.map((ask, i) => (
-              <li key={i} className="flex justify-between border-b border-green-800/30 pb-1">
-                <span>{ask.strk} STRK</span>
-                <span>{ask.yt} YT</span>
-                <span>{ask.rate}</span>
-              </li>
+          <h3 className="text-sm font-medium text-[#40c9a2] mb-2">
+            Asks (Sell YT)
+          </h3>
+          <div className="space-y-2">
+            {asks.map((ask, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between text-sm"
+              >
+                <span className="text-[#ff9776]">{ask.amount}</span>
+                <span className="text-white">{ask.yt}</span>
+                <span className="text-[#40c9a2]">{ask.rate}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
-  
+
         <div>
-          <h3 className="text-sm text-red-400 font-semibold mb-1">Bids (Buy YT)</h3>
-          <ul className="space-y-1 text-sm font-mono text-red-300">
-            {orderbook.bids.map((bid, i) => (
-              <li key={i} className="flex justify-between border-b border-red-800/30 pb-1">
-                <span>{bid.strk} STRK</span>
-                <span>{bid.yt} YT</span>
-                <span>{bid.rate}</span>
-              </li>
+          <h3 className="text-sm font-medium text-[#ff9776] mb-2">
+            Bids (Buy YT)
+          </h3>
+          <div className="space-y-2">
+            {bids.map((bid, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between text-sm"
+              >
+                <span className="text-[#40c9a2]">{bid.amount}</span>
+                <span className="text-white">{bid.yt}</span>
+                <span className="text-[#ff9776]">{bid.rate}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
-  
-        <div>
-          <h3 className="text-sm text-gray-300 font-semibold mb-1">History</h3>
-          <ul className="space-y-1 text-sm text-gray-400 font-mono">
-            {orderbook.history.map((item, index) => (
-              <li key={index} className="border-b border-gray-700 pb-1">{item}</li>
+
+        <div className="border-t border-gray-700/50 pt-4 mt-4">
+          <h3 className="text-sm font-medium text-gray-400 mb-2">History</h3>
+          <div className="space-y-2">
+            {history.map((item) => (
+              <div 
+                key={item.id} 
+                className={`text-sm ${
+                  item.status === 'completed' ? 'text-[#40c9a2]' :
+                  item.status === 'failed' ? 'text-[#ff9776]' :
+                  'text-gray-300'
+                }`}
+              >
+                {item.message}
+                {item.status === 'pending' && ' (Pending...)'}
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       </div>
-    )
-  }
-  
+    </div>
+  )
+}
